@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
-import { UnauthorizedError } from "../utils/errors.utils";
-import { UsuarioAutenticadoPayload, verificarTokenJwt } from "../utils/jwt.utils";
+import { ForbiddenError, UnauthorizedError } from "../utils/errors.utils";
+import { PerfilJwt, UsuarioAutenticadoPayload, verificarTokenJwt } from "../utils/jwt.utils";
 
 export interface AuthenticatedRequest extends Request {
   usuario?: UsuarioAutenticadoPayload;
@@ -31,4 +31,23 @@ export function authMiddleware(
     const mensagem = erro instanceof Error ? erro.message : "Token inválido.";
     return next(new UnauthorizedError(mensagem));
   }
+}
+
+export const authenticate = authMiddleware;
+
+/**
+ * Restringe o acesso da rota aos perfis autorizados com base no payload do token JWT.
+ */
+export function authorize(...perfisPermitidos: PerfilJwt[]) {
+  return (req: AuthenticatedRequest, _res: Response, next: NextFunction): void => {
+    if (!req.usuario) {
+      return next(new UnauthorizedError("Usuário não autenticado."));
+    }
+
+    if (!perfisPermitidos.includes(req.usuario.perfil)) {
+      return next(new ForbiddenError("Você não tem permissão para acessar este recurso."));
+    }
+
+    return next();
+  };
 }

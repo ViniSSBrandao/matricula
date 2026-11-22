@@ -72,6 +72,35 @@ export function turmasChocamHorario(horariosA: SlotHorario[], horariosB: SlotHor
 }
 
 /**
+ * Retorna a primeira turma ativa que possui choque de horário com a lista informada.
+ * Turmas sem horários nunca conflitam.
+ */
+export function encontrarConflitoHorario<T extends { horarios: SlotHorario[] }>(
+  horariosNova: SlotHorario[],
+  turmasAtivas: T[],
+): T | undefined {
+  if (horariosNova.length === 0) {
+    return undefined;
+  }
+
+  return turmasAtivas.find((turma) => turmasChocamHorario(horariosNova, turma.horarios));
+}
+
+/**
+ * Verifica se há sobreposição entre dois slots dentro da mesma lista de horários.
+ */
+export function horariosInternosChocam(horarios: SlotHorario[]): boolean {
+  for (let i = 0; i < horarios.length; i += 1) {
+    for (let j = i + 1; j < horarios.length; j += 1) {
+      if (intervalosChocam(horarios[i], horarios[j])) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+/**
  * Cria e valida um slot de horário compatível com as CHECK constraints da tabela horarios_turma.
  */
 export function criarSlotHorario(dia: number, horaInicio: string, horaFim: string): SlotHorario {

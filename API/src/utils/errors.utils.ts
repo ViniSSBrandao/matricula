@@ -17,8 +17,14 @@ export class AppError extends Error {
 }
 
 export class BadRequestError extends AppError {
-  constructor(message: string, details?: unknown) {
-    super(message, 400, "BAD_REQUEST", details);
+  constructor(message: string, details?: unknown, code = "BAD_REQUEST") {
+    super(message, 400, code, details);
+  }
+}
+
+export class ValidationError extends AppError {
+  constructor(message: string, details?: unknown, code = "VALIDATION_ERROR") {
+    super(message, 400, code, details);
   }
 }
 
@@ -41,13 +47,19 @@ export class NotFoundError extends AppError {
 }
 
 export class ConflictError extends AppError {
-  constructor(message: string, details?: unknown) {
-    super(message, 409, "CONFLICT", details);
+  constructor(message: string, details?: unknown, code = "CONFLICT") {
+    super(message, 409, code, details);
   }
 }
 
 export class UnprocessableEntityError extends AppError {
-  constructor(message: string, details?: unknown) {
-    super(message, 422, "UNPROCESSABLE_ENTITY", details);
+  constructor(message: string, details?: unknown, code = "UNPROCESSABLE_ENTITY") {
+    super(message, 422, code, details);
+  }
+}
+
+export class BusinessRuleError extends AppError {
+  constructor(message: string, code = "BUSINESS_RULE_VIOLATION", details?: unknown) {
+    super(message, 422, code, details);
   }
 }
