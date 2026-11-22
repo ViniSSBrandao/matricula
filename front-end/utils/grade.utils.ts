@@ -4,6 +4,12 @@ import { formatarMinutosParaHora, obterNomeDia } from "./horario.utils";
 export const DIAS_UTEIS = [1, 2, 3, 4, 5] as const;
 export const DIAS_SEMANA_SEM_DOMINGO = [1, 2, 3, 4, 5, 6] as const;
 
+export interface BlocoHorarioBasico {
+  dia: number;
+  inicio: number;
+  fim: number;
+}
+
 const ROTULO_CLASSIFICACAO_CURTO: Record<ClassificacaoDisciplina, string> = {
   obrigatoria: "Obrigatória",
   perfil: "Eletiva de perfil",
@@ -13,7 +19,9 @@ const ROTULO_CLASSIFICACAO_CURTO: Record<ClassificacaoDisciplina, string> = {
 /**
  * Remove blocos de domingo (dia 7) ou dias fora do intervalo 1..6.
  */
-export function filtrarBlocosSemDomingo(blocos: BlocoGrade[]): BlocoGrade[] {
+export function filtrarBlocosSemDomingo<T extends BlocoHorarioBasico>(
+  blocos: T[],
+): T[] {
   return blocos.filter((bloco) => bloco.dia >= 1 && bloco.dia <= 6);
 }
 
@@ -21,7 +29,9 @@ export function filtrarBlocosSemDomingo(blocos: BlocoGrade[]): BlocoGrade[] {
  * Retorna os dias exibidos como colunas no desktop:
  * Segunda a Sexta sempre; Sábado apenas se houver aula nele. Domingo nunca aparece.
  */
-export function obterColunasDesktop(blocos: BlocoGrade[]): number[] {
+export function obterColunasDesktop<T extends BlocoHorarioBasico>(
+  blocos: T[],
+): number[] {
   const temSabado = blocos.some((bloco) => bloco.dia === 6);
   return temSabado ? [1, 2, 3, 4, 5, 6] : [1, 2, 3, 4, 5];
 }
@@ -36,7 +46,9 @@ export interface FaixaEixoGrade {
  * Calcula a faixa vertical em minutos da grade (de 1h cheia antes do primeiro início
  * até 1h cheia depois do último fim; padrão 08:00–18:00 quando não houver blocos).
  */
-export function calcularFaixaEixo(blocos: BlocoGrade[]): FaixaEixoGrade {
+export function calcularFaixaEixo<T extends BlocoHorarioBasico>(
+  blocos: T[],
+): FaixaEixoGrade {
   const blocosValidos = filtrarBlocosSemDomingo(blocos);
 
   if (blocosValidos.length === 0) {
@@ -95,10 +107,10 @@ export function calcularPosicaoBloco(
 /**
  * Agrupa os blocos por dia (1..6, excluindo domingo) ordenados por horário de início.
  */
-export function agruparBlocosPorDia(
-  blocos: BlocoGrade[],
-): Record<number, BlocoGrade[]> {
-  const agrupado: Record<number, BlocoGrade[]> = {
+export function agruparBlocosPorDia<T extends BlocoHorarioBasico>(
+  blocos: T[],
+): Record<number, T[]> {
+  const agrupado: Record<number, T[]> = {
     1: [],
     2: [],
     3: [],
@@ -125,8 +137,8 @@ export function agruparBlocosPorDia(
  * 3) primeiro dia (Seg–Sáb) com aula;
  * 4) segunda-feira (1).
  */
-export function obterDiaInicialMobile(
-  blocosPorDia: Record<number, BlocoGrade[]>,
+export function obterDiaInicialMobile<T extends BlocoHorarioBasico>(
+  blocosPorDia: Record<number, T[]>,
   diaParam: string | null,
   dataAtual: Date = new Date(),
 ): number {
@@ -152,7 +164,7 @@ export function obterDiaInicialMobile(
 }
 
 /**
- * Gera o aria-label completo para o botão do bloco na grade semanal.
+ * Gera o aria-label completo para o botão do bloco na grade semanal do aluno.
  */
 export function montarAriaLabelBloco(bloco: BlocoGrade): string {
   const diaExtenso = obterNomeDia(bloco.dia);

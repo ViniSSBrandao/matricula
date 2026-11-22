@@ -72,6 +72,11 @@ function obterNavegacaoPorPerfil(perfil: PerfilTipo, pathname: string): NavItem[
       href: "/dashboard/professor",
       ativo: pathname === "/dashboard/professor",
     },
+    {
+      label: "Meus Horários",
+      href: "/dashboard/professor/horarios",
+      ativo: pathname.startsWith("/dashboard/professor/horarios"),
+    },
   ];
 }
 
