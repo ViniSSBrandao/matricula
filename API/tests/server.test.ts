@@ -1,26 +1,21 @@
-import { describe, it } from "node:test";
-import assert from "node:assert";
+import { describe, it, expect } from "vitest";
 import request from "supertest";
 import app from "../src/app";
 
 describe("GET /", () => {
   it("responds to the world", async () => {
-    const res = await request(app)
-      .get("/")
-      .set("Accept", "application/json");
+    const res = await request(app).get("/").set("Accept", "application/json");
 
-    assert.strictEqual(res.status, 200);
-    assert.strictEqual(res.type, "application/json");
-    assert.strictEqual(res.body.message, "Hello World!");
+    expect(res.status).toBe(200);
+    expect(res.type).toBe("application/json");
+    expect(res.body.message).toBe("Hello World!");
   });
 });
 
 describe("GET /404", () => {
   it("responds with a 404", async () => {
-    const res = await request(app)
-      .get("/404")
-      .set("Accept", "application/json");
+    const res = await request(app).get("/404").set("Accept", "application/json");
 
-    assert.strictEqual(res.status, 404);
+    expect(res.status).toBe(404);
   });
 });

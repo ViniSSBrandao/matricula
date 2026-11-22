@@ -1,24 +1,42 @@
 {
-  "name": "demo",
-  "version": "0.0.0",
+  "name": "sistema-matricula-api",
+  "version": "1.0.0",
   "private": true,
   "main": "dist/server.js",
   "scripts": {
+    "dev": "tsx watch src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js",
-    "dev": "tsx watch src/server.ts",
-    "test": "tsx --test \"tests/**/*.test.ts\""
+    "test": "vitest run",
+    "db:migrate": "prisma migrate dev",
+    "db:seed": "prisma db seed",
+    "db:reset": "prisma migrate reset --force",
+    "db:studio": "prisma studio",
+    "lint": "eslint . --ext .ts",
+    "format": "prettier --write \"src/**/*.ts\" \"prisma/**/*.ts\" \"tests/**/*.ts\""
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
   },
   "license": "MIT",
+  "dependencies": {
+    "@prisma/client": "^5.22.0",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2"
+  },
   "devDependencies": {
     "@types/express": "^4.17.21",
     "@types/node": "^20.14.9",
     "@types/supertest": "^6.0.2",
+    "@typescript-eslint/eslint-plugin": "^8.15.0",
+    "@typescript-eslint/parser": "^8.15.0",
+    "eslint": "^8.57.1",
+    "eslint-config-prettier": "^9.1.0",
+    "prettier": "^3.3.3",
+    "prisma": "^5.22.0",
     "supertest": "^7.0.0",
     "tsx": "^4.19.0",
-    "typescript": "^5.5.0"
-  },
-  "dependencies": {
-    "express": "^4.19.2"
+    "typescript": "^5.5.0",
+    "vitest": "^2.1.5"
   }
 }

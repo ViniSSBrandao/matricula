@@ -1,0 +1,154 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum TipoDisciplina {
+  obrigatoria
+  perfil
+
+  @@map("tipo_disciplina")
+}
+
+enum StatusTurma {
+  aberta
+  encerrada
+
+  @@map("status_turma")
+}
+
+enum StatusMatricula {
+  cursando
+  aprovado
+  reprovado
+  cancelada
+
+  @@map("status_matricula")
+}
+
+model Disciplina {
+  id           Int               @id @default(autoincrement())
+  codigo       String            @unique @db.VarChar(10)
+  nome         String            @db.VarChar(255)
+  cargaHoraria Int               @map("carga_horaria")
+  cursos       DisciplinaCurso[] @relation("DisciplinaCursos")
+  turmas       Turma[]           @relation("DisciplinaTurmas")
+
+  @@map("disciplinas")
+}
+
+model Curso {
+  id          Int               @id @default(autoincrement())
+  nome        String            @unique @db.VarChar(256)
+  chLivres    Int               @map("ch_livres")
+  chPerfil    Int               @map("ch_perfil")
+  disciplinas DisciplinaCurso[] @relation("CursoDisciplinas")
+  alunos      Aluno[]           @relation("CursoAlunos")
+
+  @@map("cursos")
+}
+
+model DisciplinaCurso {
+  id           Int            @id @default(autoincrement())
+  idCurso      Int            @map("id_curso")
+  idDisciplina Int            @map("id_disciplina")
+  tipo         TipoDisciplina
+
+  curso      Curso      @relation("CursoDisciplinas", fields: [idCurso], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  disciplina Disciplina @relation("DisciplinaCursos", fields: [idDisciplina], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([idCurso, idDisciplina], map: "disciplina_curso_unico")
+  @@map("disciplina_curso")
+}
+
+model Professor {
+  id        Int       @id @default(autoincrement())
+  nome      String    @db.VarChar(255)
+  titulacao String    @default("Doutor") @db.VarChar(30)
+  email     String    @unique @db.VarChar(255)
+  cadastro  Cadastro? @relation("ProfessorCadastro")
+  turmas    Turma[]   @relation("ProfessorTurmas")
+
+  @@map("professor")
+}
+
+model Servidor {
+  id       Int       @id @default(autoincrement())
+  nome     String    @db.VarChar(255)
+  cadastro Cadastro? @relation("ServidorCadastro")
+
+  @@map("servidor")
+}
+
+model Aluno {
+  id         Int           @id @default(autoincrement())
+  nome       String        @db.VarChar(255)
+  idCurso    Int           @map("id_curso")
+  curso      Curso         @relation("CursoAlunos", fields: [idCurso], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  cadastro   Cadastro?     @relation("AlunoCadastro")
+  matriculas AlunosTurma[] @relation("AlunoMatriculas")
+
+  @@map("aluno")
+}
+
+model Cadastro {
+  id          Int    @id @default(autoincrement())
+  login       String @unique @db.VarChar(255)
+  email       String @unique @db.VarChar(255)
+  idAluno     Int?   @unique @map("id_aluno")
+  idProfessor Int?   @unique @map("id_professor")
+  idServidor  Int?   @unique @map("id_servidor")
+
+  aluno     Aluno?     @relation("AlunoCadastro", fields: [idAluno], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  professor Professor? @relation("ProfessorCadastro", fields: [idProfessor], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  servidor  Servidor?  @relation("ServidorCadastro", fields: [idServidor], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@map("cadastro")
+}
+
+model Turma {
+  id           Int             @id @default(autoincrement())
+  idProfessor  Int             @map("id_professor")
+  idDisciplina Int             @map("id_disciplina")
+  vagas        Int
+  status       StatusTurma     @default(aberta)
+  professor    Professor       @relation("ProfessorTurmas", fields: [idProfessor], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  disciplina   Disciplina      @relation("DisciplinaTurmas", fields: [idDisciplina], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  matriculas   AlunosTurma[]   @relation("TurmaMatriculas")
+  horarios     HorariosTurma[] @relation("TurmaHorarios")
+
+  @@index([status], map: "idx_turma_status")
+  @@index([idDisciplina], map: "idx_turma_disciplina")
+  @@map("turma")
+}
+
+model AlunosTurma {
+  id      Int             @id @default(autoincrement())
+  idTurma Int             @map("id_turma")
+  idAluno Int             @map("id_aluno")
+  status  StatusMatricula
+
+  turma Turma @relation("TurmaMatriculas", fields: [idTurma], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  aluno Aluno @relation("AlunoMatriculas", fields: [idAluno], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([idAluno, idTurma], map: "alunos_turma_unico")
+  @@index([idTurma, status], map: "idx_alunos_turma_turma")
+  @@index([idAluno, status], map: "idx_alunos_turma_aluno")
+  @@map("alunos_turma")
+}
+
+model HorariosTurma {
+  id      Int   @id @default(autoincrement())
+  idTurma Int   @map("id_turma")
+  dia     Int   @db.SmallInt
+  inicio  Int
+  fim     Int
+  turma   Turma @relation("TurmaHorarios", fields: [idTurma], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([idTurma], map: "idx_horarios_turma_turma")
+  @@map("horarios_turma")
+}
