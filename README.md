@@ -10,13 +10,26 @@ Monorepo do sistema de matrícula de graduação:
 
 **Índice**
 
-- [Início rápido](#início-rápido) · [Contas de demonstração](#contas-de-demonstração-seed)
+- [Deploy online](#deploy-online) · [Início rápido](#início-rápido) · [Contas de demonstração](#contas-de-demonstração-seed)
 - [Glossário](#glossário)
 - [O que foi implementado](#o-que-foi-implementado) · [Requisito extra](#requisito-extra-choque-de-horário-e-grade-semanal)
 - [Arquitetura do back-end](#arquitetura-do-back-end) · [Convenções](#convenções)
 - [Regras de negócio](#regras-de-negócio-e-onde-são-garantidas)
 - [Front-end](#front-end) · [Banco de dados](#banco-de-dados) · [Testes](#testes)
 - [Decisões e trade-offs](#decisões-principais-e-trade-offs) · [Limitações](#limitações-conhecidas-e-próximos-passos)
+
+---
+
+## Deploy online
+
+O sistema está publicado para acesso direto:
+
+| Serviço               | Plataforma | URL                                                         |
+| :-------------------- | :--------- | :---------------------------------------------------------- |
+| Front-end             | Vercel     | https://matricula-lac.vercel.app/                           |
+| Back-end (API)        | Render     | https://matricula-8l2z.onrender.com/                        |
+| Documentação Swagger  | Render     | https://matricula-8l2z.onrender.com/docs                    |
+| Banco de dados        | NeonDB     | PostgreSQL 16 gerenciado (conectado à API no Render)        |
 
 ---
 
@@ -243,6 +256,41 @@ toastEngine.error(mensagem);
 | Aluno      | `/dashboard/aluno`, `/ofertas`, `/matriculas`, `/horarios`, `/progresso`    |
 | Secretaria | `/dashboard/servidor`, `/disciplinas`, `/professores`, `/alunos`, `/turmas` |
 | Professor  | `/dashboard/professor`, `/horarios`                                         |
+
+### Prévia das telas
+
+<table>
+  <tr>
+    <td align="center" width="50%">
+      <img src="docs/paginas/login_page.png" alt="Tela de login com acesso rápido por perfil" width="400" /><br />
+      <sub><strong>Login</strong> — acesso rápido pelas contas do seed</sub>
+    </td>
+    <td align="center" width="50%">
+      <img src="docs/paginas/ofertas_aluno.png" alt="Ofertas de turmas do aluno" width="400" /><br />
+      <sub><strong>Ofertas (Aluno)</strong> — classificação e aviso de conflito</sub>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" width="50%">
+      <img src="docs/paginas/horario_aluno.png" alt="Grade semanal de horários do aluno" width="400" /><br />
+      <sub><strong>Grade semanal (Aluno)</strong> — visualização dos horários</sub>
+    </td>
+    <td align="center" width="50%">
+      <img src="docs/paginas/progresso_aluno.png" alt="Progresso curricular do aluno" width="400" /><br />
+      <sub><strong>Progresso (Aluno)</strong> — integralização por grupo</sub>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" width="50%">
+      <img src="docs/paginas/turmas_cadastradas_secretaria.png" alt="Gerenciamento de turmas e vagas pela Secretaria" width="400" /><br />
+      <sub><strong>Turmas (Secretaria)</strong> — cadastro e ajuste de vagas</sub>
+    </td>
+    <td align="center" width="50%">
+      <img src="docs/paginas/dash_professor.png" alt="Painel do docente" width="400" /><br />
+      <sub><strong>Painel (Docente)</strong> — resumo de turmas e horários</sub>
+    </td>
+  </tr>
+</table>
 
 ### Estados de lista, URL e responsividade
 
