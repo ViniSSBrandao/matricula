@@ -1,7 +1,10 @@
-import prisma from "../../lib/prisma";
-import { AppError } from "../../utils/errors.utils";
+import { BadRequestError, UnauthorizedError } from "../../utils/errors.utils";
 import { gerarTokenJwt } from "../../utils/jwt.utils";
 import { montarPerfilUsuario, PerfilUsuarioDTO } from "../../utils/perfil.utils";
+import {
+  buscarCadastroPorLogin,
+  buscarTodosCadastrosComRelacoes,
+} from "./login.repository";
 
 export interface LoginDisponivelDTO {
   login: string;
@@ -12,17 +15,10 @@ export interface LoginDisponivelDTO {
 }
 
 /**
- * Lista todos os logins cadastrados para facilitar a seleção rápida na interface de teste.
+ * Lista todos os logins cadastrados para seleção rápida na interface.
  */
 export async function listarLoginsDisponiveis(): Promise<LoginDisponivelDTO[]> {
-  const cadastros = await prisma.cadastro.findMany({
-    include: {
-      aluno: { include: { curso: true } },
-      professor: true,
-      servidor: true,
-    },
-    orderBy: { id: "asc" },
-  });
+  const cadastros = await buscarTodosCadastrosComRelacoes();
 
   return cadastros.map((cad) => {
     const perfil = montarPerfilUsuario(cad);
@@ -48,20 +44,12 @@ export async function autenticarPorLogin(login: string): Promise<{
 }> {
   const loginNormalizado = login.trim();
   if (!loginNormalizado) {
-    throw new AppError("Informe o nome de usuário (login).", 400);
+    throw new BadRequestError("Informe o nome de usuário (login).");
   }
 
-  const cadastro = await prisma.cadastro.findUnique({
-    where: { login: loginNormalizado },
-    include: {
-      aluno: { include: { curso: true } },
-      professor: true,
-      servidor: true,
-    },
-  });
-
+  const cadastro = await buscarCadastroPorLogin(loginNormalizado);
   if (!cadastro) {
-    throw new AppError(`Login "${loginNormalizado}" não encontrado.`, 401);
+    throw new UnauthorizedError(`Login "${loginNormalizado}" não encontrado.`);
   }
 
   const usuario = montarPerfilUsuario(cadastro);

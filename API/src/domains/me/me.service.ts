@@ -1,6 +1,5 @@
 import { StatusMatricula, StatusTurma, TipoDisciplina } from "@prisma/client";
-import prisma from "../../lib/prisma";
-import { AppError } from "../../utils/errors.utils";
+import { NotFoundError } from "../../utils/errors.utils";
 import { formatarSlotHorario, SlotHorario } from "../../utils/horario.utils";
 import {
   calcularProgressoCurricularAluno,
@@ -8,6 +7,12 @@ import {
   PerfilUsuarioDTO,
   ProgressoCurricularDTO,
 } from "../../utils/perfil.utils";
+import {
+  buscarCadastroPorId,
+  buscarDadosAcademicosAluno,
+  buscarDadosConsolidadosSecretaria,
+  buscarTurmasDoProfessor,
+} from "./me.repository";
 
 export interface HorarioFormatadoDTO extends SlotHorario {
   texto: string;
@@ -102,47 +107,24 @@ function formatarListaHorarios(
 }
 
 /**
- * Carrega o perfil completo e os dados iniciais de dashboard específicos do usuário autenticado.
+ * Carrega o perfil completo e o dashboard inicial específico do usuário autenticado.
  */
 export async function obterDashboardPorUsuario(idCadastro: number): Promise<{
   usuario: PerfilUsuarioDTO;
   dashboard: DashboardUsuarioDTO;
 }> {
-  const cadastro = await prisma.cadastro.findUnique({
-    where: { id: idCadastro },
-    include: {
-      aluno: { include: { curso: true } },
-      professor: true,
-      servidor: true,
-    },
-  });
-
+  const cadastro = await buscarCadastroPorId(idCadastro);
   if (!cadastro) {
-    throw new AppError("Cadastro não encontrado.", 404);
+    throw new NotFoundError("Cadastro não encontrado.");
   }
 
   const usuario = montarPerfilUsuario(cadastro);
 
   if (usuario.perfil === "aluno" && cadastro.aluno) {
-    const [vinculosCurso, matriculas] = await Promise.all([
-      prisma.disciplinaCurso.findMany({
-        where: { idCurso: cadastro.aluno.idCurso },
-        include: { disciplina: true },
-      }),
-      prisma.alunosTurma.findMany({
-        where: { idAluno: cadastro.aluno.id },
-        include: {
-          turma: {
-            include: {
-              disciplina: true,
-              professor: true,
-              horarios: { orderBy: [{ dia: "asc" }, { inicio: "asc" }] },
-            },
-          },
-        },
-        orderBy: { id: "asc" },
-      }),
-    ]);
+    const { vinculosCurso, matriculas } = await buscarDadosAcademicosAluno(
+      cadastro.aluno.id,
+      cadastro.aluno.idCurso,
+    );
 
     const mapaTipos = new Map<number, TipoDisciplina>();
     let chObrigatoriaExigida = 0;
@@ -192,37 +174,25 @@ export async function obterDashboardPorUsuario(idCadastro: number): Promise<{
       };
     };
 
-    const matriculasAtivas = matriculas
-      .filter((m) => m.status === StatusMatricula.cursando)
-      .map(mapearMatricula);
-
-    const historico = matriculas
-      .filter(
-        (m) => m.status === StatusMatricula.aprovado || m.status === StatusMatricula.reprovado,
-      )
-      .map(mapearMatricula);
-
     return {
       usuario,
       dashboard: {
         tipo: "aluno",
         progresso,
-        matriculasAtivas,
-        historico,
+        matriculasAtivas: matriculas
+          .filter((m) => m.status === StatusMatricula.cursando)
+          .map(mapearMatricula),
+        historico: matriculas
+          .filter(
+            (m) => m.status === StatusMatricula.aprovado || m.status === StatusMatricula.reprovado,
+          )
+          .map(mapearMatricula),
       },
     };
   }
 
   if (usuario.perfil === "professor" && cadastro.professor) {
-    const turmas = await prisma.turma.findMany({
-      where: { idProfessor: cadastro.professor.id },
-      include: {
-        disciplina: true,
-        horarios: { orderBy: [{ dia: "asc" }, { inicio: "asc" }] },
-        matriculas: { select: { status: true } },
-      },
-      orderBy: [{ status: "asc" }, { id: "asc" }],
-    });
+    const turmas = await buscarTurmasDoProfessor(cadastro.professor.id);
 
     return {
       usuario,
@@ -245,61 +215,14 @@ export async function obterDashboardPorUsuario(idCadastro: number): Promise<{
     };
   }
 
-  const [
-    totalCursos,
-    totalDisciplinas,
-    totalAlunos,
-    totalProfessores,
-    totalProfessoresSemCadastro,
-    totalTurmasAbertas,
-    totalTurmasEncerradas,
-    cursos,
-    turmasAbertas,
-  ] = await Promise.all([
-    prisma.curso.count(),
-    prisma.disciplina.count(),
-    prisma.aluno.count(),
-    prisma.professor.count(),
-    prisma.professor.count({ where: { cadastro: { is: null } } }),
-    prisma.turma.count({ where: { status: StatusTurma.aberta } }),
-    prisma.turma.count({ where: { status: StatusTurma.encerrada } }),
-    prisma.curso.findMany({
-      include: {
-        _count: {
-          select: { alunos: true, disciplinas: true },
-        },
-      },
-      orderBy: { id: "asc" },
-    }),
-    prisma.turma.findMany({
-      where: { status: StatusTurma.aberta },
-      include: {
-        disciplina: true,
-        professor: true,
-        horarios: { orderBy: [{ dia: "asc" }, { inicio: "asc" }] },
-        matriculas: {
-          where: { status: StatusMatricula.cursando },
-          select: { id: true },
-        },
-      },
-      orderBy: { id: "asc" },
-    }),
-  ]);
+  const dadosSecretaria = await buscarDadosConsolidadosSecretaria();
 
   return {
     usuario,
     dashboard: {
       tipo: "servidor",
-      metricas: {
-        cursos: totalCursos,
-        disciplinas: totalDisciplinas,
-        alunos: totalAlunos,
-        professores: totalProfessores,
-        professoresSemCadastro: totalProfessoresSemCadastro,
-        turmasAbertas: totalTurmasAbertas,
-        turmasEncerradas: totalTurmasEncerradas,
-      },
-      cursos: cursos.map((c) => ({
+      metricas: dadosSecretaria.metricas,
+      cursos: dadosSecretaria.cursos.map((c) => ({
         id: c.id,
         nome: c.nome,
         chPerfil: c.chPerfil,
@@ -307,7 +230,7 @@ export async function obterDashboardPorUsuario(idCadastro: number): Promise<{
         totalAlunos: c._count.alunos,
         totalDisciplinasVinculadas: c._count.disciplinas,
       })),
-      turmasAbertas: turmasAbertas.map((t) => ({
+      turmasAbertas: dadosSecretaria.turmasAbertas.map((t) => ({
         id: t.id,
         codigoDisciplina: t.disciplina.codigo,
         nomeDisciplina: t.disciplina.nome,

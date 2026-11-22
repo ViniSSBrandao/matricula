@@ -1,29 +1,53 @@
-import { Response } from "express";
-
 /**
- * Erro de aplicação com código HTTP associado para tratamento padronizado nos controllers.
+ * Erro base HTTP/aplicação para comunicação padronizada entre camadas e o error handler global.
  */
 export class AppError extends Error {
   public readonly statusCode: number;
+  public readonly code: string;
+  public readonly details?: unknown;
 
-  constructor(message: string, statusCode = 400) {
+  constructor(message: string, statusCode = 400, code = "APP_ERROR", details?: unknown) {
     super(message);
-    this.name = "AppError";
+    this.name = new.target.name;
     this.statusCode = statusCode;
+    this.code = code;
+    this.details = details;
+    Object.setPrototypeOf(this, new.target.prototype);
   }
 }
 
-/**
- * Converte AppError ou erros inesperados em respostas HTTP JSON padronizadas.
- */
-export function tratarErroController(
-  res: Response,
-  erro: unknown,
-  contexto: string,
-): Response {
-  if (erro instanceof AppError) {
-    return res.status(erro.statusCode).json({ message: erro.message });
+export class BadRequestError extends AppError {
+  constructor(message: string, details?: unknown) {
+    super(message, 400, "BAD_REQUEST", details);
   }
-  console.error(`Erro interno em ${contexto}:`, erro);
-  return res.status(500).json({ message: "Erro interno do servidor." });
+}
+
+export class UnauthorizedError extends AppError {
+  constructor(message = "Não autorizado.") {
+    super(message, 401, "UNAUTHORIZED");
+  }
+}
+
+export class ForbiddenError extends AppError {
+  constructor(message = "Acesso negado.") {
+    super(message, 403, "FORBIDDEN");
+  }
+}
+
+export class NotFoundError extends AppError {
+  constructor(message = "Recurso não encontrado.") {
+    super(message, 404, "NOT_FOUND");
+  }
+}
+
+export class ConflictError extends AppError {
+  constructor(message: string, details?: unknown) {
+    super(message, 409, "CONFLICT", details);
+  }
+}
+
+export class UnprocessableEntityError extends AppError {
+  constructor(message: string, details?: unknown) {
+    super(message, 422, "UNPROCESSABLE_ENTITY", details);
+  }
 }
