@@ -1,4 +1,6 @@
 import express, { Express, Request, Response } from "express";
+import swaggerUi from "swagger-ui-express";
+import { buildSwaggerDocument } from "./docs/swagger";
 import disciplinasRouter from "./domains/disciplinas/disciplinas.routes";
 import loginRouter from "./domains/login/login.routes";
 import matriculasRouter from "./domains/matriculas/matriculas.routes";
@@ -24,6 +26,12 @@ app.get("/", (_req: Request, res: Response) => {
 app.get("/health", (_req: Request, res: Response) => {
   return res.status(200).json({ status: "ok" });
 });
+
+const swaggerDocument = buildSwaggerDocument();
+app.get("/docs.json", (_req: Request, res: Response) => {
+  return res.status(200).json(swaggerDocument);
+});
+app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 app.use("/auth", loginRouter);
 app.use("/auth", meRouter);
