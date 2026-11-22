@@ -1,5 +1,5 @@
 import { StatusMatricula, StatusTurma, TipoDisciplina } from "@prisma/client";
-import { NotFoundError } from "../../utils/errors.utils";
+import { NotFoundError, UnauthorizedError } from "../../utils/errors.utils";
 import { formatarSlotHorario, SlotHorario } from "../../utils/horario.utils";
 import {
   calcularProgressoCurricularAluno,
@@ -109,10 +109,14 @@ function formatarListaHorarios(
 /**
  * Carrega o perfil completo e o dashboard inicial específico do usuário autenticado.
  */
-export async function obterDashboardPorUsuario(idCadastro: number): Promise<{
+export async function obterDashboardPorUsuario(idCadastro?: number): Promise<{
   usuario: PerfilUsuarioDTO;
   dashboard: DashboardUsuarioDTO;
 }> {
+  if (!idCadastro) {
+    throw new UnauthorizedError("Usuário não autenticado.");
+  }
+
   const cadastro = await buscarCadastroPorId(idCadastro);
   if (!cadastro) {
     throw new NotFoundError("Cadastro não encontrado.");

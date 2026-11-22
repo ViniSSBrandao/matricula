@@ -17,10 +17,10 @@ export interface LoginDisponivelDTO {
 /**
  * Lista todos os logins cadastrados para seleção rápida na interface.
  */
-export async function listarLoginsDisponiveis(): Promise<LoginDisponivelDTO[]> {
+export async function listarLoginsDisponiveis(): Promise<{ logins: LoginDisponivelDTO[] }> {
   const cadastros = await buscarTodosCadastrosComRelacoes();
 
-  return cadastros.map((cad) => {
+  const logins = cadastros.map((cad) => {
     const perfil = montarPerfilUsuario(cad);
     const detalhe =
       perfil.curso?.nome ?? perfil.titulacao ?? "Secretaria Acadêmica";
@@ -33,16 +33,18 @@ export async function listarLoginsDisponiveis(): Promise<LoginDisponivelDTO[]> {
       email: perfil.email,
     };
   });
+
+  return { logins };
 }
 
 /**
  * Autentica um usuário apenas pelo login (sem senha) e emite um token JWT.
  */
-export async function autenticarPorLogin(login: string): Promise<{
+export async function autenticarPorLogin(login: unknown): Promise<{
   token: string;
   usuario: PerfilUsuarioDTO;
 }> {
-  const loginNormalizado = login.trim();
+  const loginNormalizado = typeof login === "string" ? login.trim() : "";
   if (!loginNormalizado) {
     throw new BadRequestError("Informe o nome de usuário (login).");
   }
