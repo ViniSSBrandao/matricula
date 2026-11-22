@@ -1,6 +1,7 @@
 import express, { Express, Request, Response } from "express";
+import loginRouter from "./domains/login/login.routes";
+import meRouter from "./domains/me/me.routes";
 import { corsMiddleware } from "./middlewares/cors.middleware";
-import authRouter from "./routes/auth.routes";
 
 const app: Express = express();
 
@@ -13,6 +14,9 @@ app.get("/", (_req: Request, res: Response) => {
   });
 });
 
-app.use("/auth", authRouter);
+app.use("/auth", loginRouter);
+app.use("/auth", meRouter);
+app.use("/", loginRouter);
+app.use("/", meRouter);
 
 export default app;

@@ -21,10 +21,25 @@ Monorepo do sistema de matrícula de graduação com back-end em Express/TypeScr
 │   │   ├── schema.prisma
 │   │   └── seed.ts
 │   ├── src/
+│   │   ├── domains/
+│   │   │   ├── login/
+│   │   │   │   ├── login.controller.ts
+│   │   │   │   ├── login.routes.ts
+│   │   │   │   └── login.service.ts
+│   │   │   └── me/
+│   │   │       ├── me.controller.ts
+│   │   │       ├── me.routes.ts
+│   │   │       └── me.service.ts
 │   │   ├── lib/
 │   │   │   └── prisma.ts
+│   │   ├── middlewares/
+│   │   │   ├── auth.middleware.ts
+│   │   │   └── cors.middleware.ts
 │   │   ├── utils/
-│   │   │   └── horario.utils.ts
+│   │   │   ├── errors.utils.ts
+│   │   │   ├── horario.utils.ts
+│   │   │   ├── jwt.utils.ts
+│   │   │   └── perfil.utils.ts
 │   │   ├── app.ts
 │   │   └── server.ts
 │   ├── tests/
