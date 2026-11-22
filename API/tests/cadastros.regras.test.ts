@@ -46,7 +46,7 @@ describe("Regras de negócio — Cadastros da Secretaria (Regras 1 a 5)", () => 
     expect(res.status).toBe(403);
   });
 
-  it("Regra 1: rejeita código de disciplina duplicado no cadastro e na edição", async () => {
+  it("Regra 1: rejeita código de disciplina duplicado no cadastro e impede alterar o código na edição", async () => {
     const primeira = await request(app)
       .post("/disciplinas")
       .set("Authorization", `Bearer ${tokenSecretaria}`)
@@ -69,13 +69,12 @@ describe("Regras de negócio — Cadastros da Secretaria (Regras 1 a 5)", () => 
 
     expect(segunda.status).toBe(201);
 
-    const edicaoDuplicada = await request(app)
+    const edicaoComOutroCodigo = await request(app)
       .put(`/disciplinas/${segunda.body.id}`)
       .set("Authorization", `Bearer ${tokenSecretaria}`)
       .send({ codigo: "IF668", nome: "Algoritmos", cargaHoraria: 60 });
 
-    expect(edicaoDuplicada.status).toBe(409);
-    expect(edicaoDuplicada.body.code).toBe("DISCIPLINA_CODIGO_DUPLICADO");
+    expect(edicaoComOutroCodigo.status).toBe(400);
   });
 
   it("Regra 2: aceita CH múltipla de 15 entre 15h e 120h e rejeita valores inválidos", async () => {

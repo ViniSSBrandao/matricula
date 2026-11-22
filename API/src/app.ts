@@ -281,6 +281,9 @@ const swaggerUiOptions = {
   `,
 };
 
+app.get("/docs/openapi.json", (_req: Request, res: Response) => {
+  return res.status(200).json(swaggerDocument);
+});
 app.get("/docs.json", (_req: Request, res: Response) => {
   return res.status(200).json(swaggerDocument);
 });
