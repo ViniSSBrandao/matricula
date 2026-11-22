@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { ListStatePanel } from "@/components/ui/ListStatePanel";
 import { PaginationBar } from "@/components/ui/PaginationBar";
 import { SectionCard } from "@/components/ui/SectionCard";
@@ -35,6 +35,7 @@ export function DisciplinasView() {
     erro: null,
   });
 
+  const formSectionRef = useRef<HTMLDivElement | null>(null);
   const [editandoId, setEditandoId] = useState<number | null>(null);
   const [codigo, setCodigo] = useState("");
   const [nome, setNome] = useState("");
@@ -81,6 +82,7 @@ export function DisciplinasView() {
     setNome(item.nome);
     setCargaHoraria(item.cargaHoraria);
     setErroForm(null);
+    formSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
   function limparFormulario() {
@@ -138,11 +140,12 @@ export function DisciplinasView() {
 
   return (
     <div className="space-y-6">
-      <SectionCard
-        eyebrow="Catálogo Curricular"
-        title={editandoId !== null ? "Editar Disciplina" : "Nova Disciplina"}
-        subtitle="Cadastre ou atualize disciplinas com código único e carga horária múltipla de 15h."
-      >
+      <div ref={formSectionRef}>
+        <SectionCard
+          eyebrow="Catálogo Curricular"
+          title={editandoId !== null ? "Editar Disciplina" : "Nova Disciplina"}
+          subtitle="Cadastre ou atualize disciplinas com código único e carga horária múltipla de 15h."
+        >
         <form onSubmit={(e) => void handleSubmit(e)} className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-4">
             <div>
@@ -159,9 +162,9 @@ export function DisciplinasView() {
                 maxLength={10}
                 value={codigo}
                 onChange={(e) => setCodigo(e.target.value)}
-                disabled={salvando}
+                disabled={salvando || editandoId !== null}
                 placeholder="Ex.: IF999"
-                className="mt-1.5 w-full rounded-xl border border-slate-300 bg-slate-50/50 px-3.5 py-2.5 font-mono text-sm uppercase text-slate-900 outline-none transition focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 disabled:bg-slate-100"
+                className="mt-1.5 w-full rounded-xl border border-slate-300 bg-slate-50/50 px-3.5 py-2.5 font-mono text-sm uppercase text-slate-900 outline-none transition focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500"
               />
             </div>
 
@@ -241,7 +244,8 @@ export function DisciplinasView() {
             </button>
           </div>
         </form>
-      </SectionCard>
+        </SectionCard>
+      </div>
 
       <SectionCard
         title="Disciplinas Cadastradas"

@@ -1,7 +1,7 @@
 import { Prisma } from "@prisma/client";
 import prisma from "../../lib/prisma";
 import { normalizarErroParaHttp } from "../../utils/error-mapper.utils";
-import { ConflictError, NotFoundError } from "../../utils/errors.utils";
+import { BadRequestError, ConflictError, NotFoundError } from "../../utils/errors.utils";
 import { DisciplinaBody, ListarDisciplinasQuery } from "./disciplinas.schema";
 
 /**
@@ -59,11 +59,25 @@ export async function criarDisciplina(dados: DisciplinaBody) {
  */
 export async function atualizarDisciplina(id: number, dados: DisciplinaBody) {
   try {
+    const existente = await prisma.disciplina.findUnique({ where: { id } });
+    if (!existente) {
+      throw new NotFoundError("Disciplina não encontrada.");
+    }
+    if (dados.codigo !== existente.codigo) {
+      throw new BadRequestError("O código da disciplina não pode ser alterado.");
+    }
+
     return await prisma.disciplina.update({
       where: { id },
-      data: dados,
+      data: {
+        nome: dados.nome,
+        cargaHoraria: dados.cargaHoraria,
+      },
     });
   } catch (erro) {
+    if (erro instanceof BadRequestError || erro instanceof NotFoundError) {
+      throw erro;
+    }
     if (erro instanceof Prisma.PrismaClientKnownRequestError) {
       if (erro.code === "P2002") {
         throw new ConflictError(
