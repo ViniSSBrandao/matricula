@@ -6,6 +6,7 @@ import { criarMatriculaBodySchema, matriculaIdParamSchema } from "./matriculas.s
 import {
   cancelarMatriculaAluno,
   matricularAluno,
+  obterGradeSemanalAluno,
   obterMatriculasAtivas,
 } from "./matriculas.service";
 
@@ -33,6 +34,18 @@ export async function getMatriculas(req: AuthenticatedRequest, res: Response): P
 
   const resposta = await obterMatriculasAtivas(req.usuario.idPerfil);
   res.status(200).json(resposta);
+}
+
+/**
+ * GET /matriculas/grade — retorna a grade semanal de horários das matrículas cursando do aluno.
+ */
+export async function getGradeMatriculas(req: AuthenticatedRequest, res: Response): Promise<void> {
+  if (!req.usuario) {
+    throw new UnauthorizedError("Usuário não autenticado.");
+  }
+
+  const grade = await obterGradeSemanalAluno(req.usuario.idPerfil);
+  res.status(200).json(grade);
 }
 
 /**

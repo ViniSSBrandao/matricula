@@ -169,3 +169,84 @@
   - Matrículas `cursando` somam apenas em `emCurso` (sem excedente); reprovações e `cancelada` não contam.
   - `falta = max(0, exigida - integralizada)` e `percentual = 100` quando `exigida = 0` (capado em `100`).
 - **Erros:** `401 UNAUTHORIZED`, `403 FORBIDDEN`, `404 NOT_FOUND`.
+
+### `GET /matriculas/grade`
+- **Auth / Perfil:** `authenticate` + `authorize("aluno")`.
+- **200 OK:**
+  ```json
+  {
+    "blocos": [
+      {
+        "idMatricula": 12,
+        "idTurma": 7,
+        "dia": 2,
+        "inicio": 840,
+        "fim": 960,
+        "disciplina": { "codigo": "IF668", "nome": "Introdução à Computação" },
+        "professor": { "nome": "Prof. Ricardo Almeida" },
+        "classificacao": "obrigatoria"
+      }
+    ],
+    "semHorario": [
+      {
+        "idMatricula": 15,
+        "idTurma": 9,
+        "disciplina": { "codigo": "AD801", "nome": "Administração Contemporânea" },
+        "professor": { "nome": "Profa. Helena Costa" },
+        "classificacao": "livre"
+      }
+    ]
+  }
+  ```
+- **Regras:** Retorna apenas matrículas `cursando` do aluno autenticado; `blocos` ordenado por `dia` e `inicio`; turmas sem horário vão em `semHorario`.
+- **Erros:** `401 UNAUTHORIZED`, `403 FORBIDDEN`, `404 NOT_FOUND`.
+
+---
+
+## Secretaria Acadêmica (Perfil `servidor`)
+
+### `GET /disciplinas`
+- **Auth / Perfil:** `authenticate` + `authorize("servidor")`.
+- **Query:** `page`, `pageSize` (máx. `50`), `search` (código ou nome, case-insensitive).
+- **200 OK:** `{ items: [{ id, codigo, nome, cargaHoraria }], page, pageSize, total, totalPages }`.
+
+### `POST /disciplinas`
+- **Auth / Perfil:** `authenticate` + `authorize("servidor")`.
+- **Body:** `{ "codigo": "IF999", "nome": "Tópicos Especiais", "cargaHoraria": 60 }` (`cargaHoraria` múltipla de `15` entre `15` e `120`).
+- **201 Created:** Header `Location: /disciplinas/<id>` e objeto criado.
+- **Erros:** `400 VALIDATION_ERROR`, `409 DISCIPLINA_CODIGO_DUPLICADO`.
+
+### `PUT /disciplinas/:id`
+- **Auth / Perfil:** `authenticate` + `authorize("servidor")`.
+- **Params / Body:** `id` + `{ codigo, nome, cargaHoraria }`.
+- **200 OK:** Objeto atualizado.
+- **Erros:** `400 VALIDATION_ERROR`, `404 NOT_FOUND`, `409 DISCIPLINA_CODIGO_DUPLICADO`.
+
+### `GET /professores`
+- **Auth / Perfil:** `authenticate` + `authorize("servidor")`.
+- **Query:** `page`, `pageSize`, `search` (nome, e-mail ou titulação, case-insensitive).
+- **200 OK:** `{ items: [{ id, nome, titulacao, email }], page, pageSize, total, totalPages }`.
+
+### `POST /professores`
+- **Auth / Perfil:** `authenticate` + `authorize("servidor")`.
+- **Body:** `{ "nome": "Profa. Maria Silva", "email": "maria@ufpe.br", "titulacao": "Doutora" }` (`titulacao` opcional).
+- **201 Created:** Header `Location: /professores/<id>` e objeto criado.
+- **Erros:** `400 VALIDATION_ERROR`, `409 PROFESSOR_EMAIL_DUPLICADO`.
+
+### `GET /turmas`
+- **Auth / Perfil:** `authenticate` + `authorize("servidor")`.
+- **Query:** `page`, `pageSize`, `search` (código/nome da disciplina ou nome do professor).
+- **200 OK:** `{ items: [{ id, vagas, ocupadas, vagasDisponiveis, status, disciplina, professor, horarios }], page, pageSize, total, totalPages }`.
+
+### `POST /turmas`
+- **Auth / Perfil:** `authenticate` + `authorize("servidor")`.
+- **Body:** `{ "idDisciplina": 1, "idProfessor": 1, "vagas": 30, "horarios": [{ "dia": 1, "inicio": 480, "fim": 600 }] }` (`horarios` opcional, default `[]`, sem sobreposição interna).
+- **201 Created:** Header `Location: /turmas/<id>` e turma criada.
+- **Erros:** `400 VALIDATION_ERROR`, `404 NOT_FOUND` (disciplina ou professor inexistente).
+
+### `PATCH /turmas/:id/vagas`
+- **Auth / Perfil:** `authenticate` + `authorize("servidor")`.
+- **Body:** `{ "vagas": 35 }`.
+- **200 OK:** Turma atualizada com `ocupadas` e `vagasDisponiveis`.
+- **Regras e Concorrência:** Executa em transação com lock `SELECT ... FROM turma WHERE id = $1 FOR UPDATE`.
+- **Erros:** `400 VALIDATION_ERROR`, `404 NOT_FOUND`, `422 VAGAS_ABAIXO_DE_MATRICULADOS`.

@@ -2,6 +2,7 @@ import { StatusMatricula, TipoDisciplina } from "@prisma/client";
 import { BusinessRuleError, NotFoundError } from "../../utils/errors.utils";
 import { formatarSlotHorario, SlotHorario } from "../../utils/horario.utils";
 import { ClassificacaoDisciplina, classificarDisciplina } from "../progresso/progresso.domain";
+import { GradeSemanalDTO, montarGrade } from "./matriculas.domain";
 import {
   buscarMatriculaPorId,
   cancelarMatricula,
@@ -95,6 +96,37 @@ export async function obterMatriculasAtivas(idAluno: number): Promise<{ items: M
 
   const items = aluno.matriculas.map((matricula) => mapearMatriculaParaDTO(matricula, mapaTipos));
   return { items };
+}
+
+/**
+ * Monta a grade semanal do aluno autenticado a partir das matrículas com status cursando.
+ */
+export async function obterGradeSemanalAluno(idAluno: number): Promise<GradeSemanalDTO> {
+  const aluno = await listarMatriculasAtivasAluno(idAluno);
+  if (!aluno) {
+    throw new NotFoundError("Aluno não encontrado.");
+  }
+
+  const mapaTipos = new Map<number, TipoDisciplina>();
+  for (const vinculo of aluno.curso.disciplinas) {
+    mapaTipos.set(vinculo.idDisciplina, vinculo.tipo);
+  }
+
+  const matriculasParaGrade = aluno.matriculas.map((matricula) => ({
+    idMatricula: matricula.id,
+    idTurma: matricula.idTurma,
+    idDisciplina: matricula.turma.disciplina.id,
+    disciplina: {
+      codigo: matricula.turma.disciplina.codigo,
+      nome: matricula.turma.disciplina.nome,
+    },
+    professor: {
+      nome: matricula.turma.professor.nome,
+    },
+    horarios: matricula.turma.horarios,
+  }));
+
+  return montarGrade(matriculasParaGrade, mapaTipos);
 }
 
 /**

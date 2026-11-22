@@ -1,7 +1,12 @@
 import { Router } from "express";
 import { authenticate, authorize } from "../../middlewares/auth.middleware";
 import { asyncHandler } from "../../utils/async-handler.utils";
-import { deleteMatricula, getMatriculas, postMatricula } from "./matriculas.controller";
+import {
+  deleteMatricula,
+  getGradeMatriculas,
+  getMatriculas,
+  postMatricula,
+} from "./matriculas.controller";
 
 const matriculasRouter = Router();
 
@@ -17,6 +22,13 @@ matriculasRouter.get(
   authenticate,
   authorize("aluno"),
   asyncHandler(getMatriculas),
+);
+
+matriculasRouter.get(
+  "/matriculas/grade",
+  authenticate,
+  authorize("aluno"),
+  asyncHandler(getGradeMatriculas),
 );
 
 matriculasRouter.delete(
