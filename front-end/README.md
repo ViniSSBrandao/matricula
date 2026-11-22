@@ -1,49 +1,35 @@
-# Sistema de Matrícula — Front-end
+# Sistema de Matrícula — Front-end (`front-end/`)
 
-Interface web em **Next.js (App Router)**, **React**, **TypeScript** e **Tailwind CSS** para o portal acadêmico de matrícula de graduação.
+Interface web de exibição em **Next.js 16 (App Router)**, **React 19**, **TypeScript**, **Tailwind CSS 4** e **Axios**. Consulte o [README principal](../README.md) para visão geral da arquitetura, engines (`apiEngine` e `toastEngine`) e contas de demonstração.
 
 ## Pré-requisitos
 
-- Node.js 20+
+- Node.js 20+ e npm
 - Back-end (`API/`) em execução (por padrão em `http://localhost:5000`)
 
 ## Variável de ambiente
 
-Crie um arquivo `.env.local` na pasta `front-end/` (opcional caso utilize a porta padrão):
+Copie `.env.example` para `.env.local` (opcional se a API estiver na porta padrão `5000`):
 
-```env
-NEXT_PUBLIC_API_URL=http://localhost:5000
-```
+| Variável | Padrão (`.env.example`) | Uso |
+| :--- | :--- | :--- |
+| `NEXT_PUBLIC_API_URL` | `"http://localhost:5000"` | URL base da API REST consumida por `engines/api.engine.ts` |
 
-- **`NEXT_PUBLIC_API_URL`**: URL base da API REST utilizada pelo cliente HTTP em `engines/api.engine.ts`. Quando omitida, assume `http://localhost:5000`.
+## Comandos
 
-## Como rodar
+Execute dentro de `front-end/`:
 
-Instale as dependências:
+| Comando | O que faz |
+| :--- | :--- |
+| `npm install` | Instala dependências Node |
+| `npm run dev` | Sobe o servidor de desenvolvimento Next.js em `http://localhost:3000` |
+| `npm run build` | Gera o build de produção (`next build`) |
+| `npm start` | Inicia a aplicação em modo produção (`next start`) |
+| `npm run lint` | Executa o ESLint do projeto |
 
-```bash
-npm install
-```
+## Rotas da interface
 
-### Desenvolvimento
-
-```bash
-npm run dev
-```
-
-Acesse [http://localhost:3000](http://localhost:3000).
-
-### Lint e Build de Produção
-
-```bash
-npm run lint
-npm run build
-npm run start
-```
-
-## Perfis e Fluxos Principais
-
-- **Autenticação (`/login`) e Cadastro (`/cadastro`)**: login sem senha por nome de usuário e auto-cadastro para alunos e docentes previamente adicionados pela secretaria.
-- **Aluno (`/dashboard/aluno/*`)**: Visão Geral, Disciplinas Ofertadas (busca, filtros, ordenação e matrícula), Disciplinas Matriculadas (listagem e cancelamento com confirmação), Meus Horários (grade semanal e visão mobile por dia) e Progresso curricular.
-- **Docente (`/dashboard/professor/*`)**: Visão Geral de turmas e Meus Horários (grade semanal).
-- **Secretaria (`/dashboard/servidor/*`)**: Visão Geral e gestão de Disciplinas, Professores (adicionar/desligar), Alunos (adicionar/desligar) e Turmas (criar e ajustar vagas).
+- **Entrada e cadastro:** `/login` (com atalhos para contas do seed) e `/cadastro` (auto-cadastro de aluno ou docente pré-cadastrado).
+- **Aluno:** `/dashboard/aluno`, `/dashboard/aluno/ofertas`, `/dashboard/aluno/matriculas`, `/dashboard/aluno/horarios` e `/dashboard/aluno/progresso`.
+- **Secretaria (`servidor`):** `/dashboard/servidor`, `/dashboard/servidor/disciplinas`, `/dashboard/servidor/professores`, `/dashboard/servidor/alunos` e `/dashboard/servidor/turmas`.
+- **Docente (`professor`):** `/dashboard/professor` e `/dashboard/professor/horarios`.
