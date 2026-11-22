@@ -122,7 +122,19 @@ export type DashboardData =
   | DashboardProfessorData
   | DashboardServidorData;
 
+export interface RespostaLogins {
+  logins: LoginDisponivelSeed[];
+  msg?: string;
+}
+
+export interface RespostaLogin {
+  token: string;
+  usuario: UsuarioAutenticado;
+  msg?: string;
+}
+
 export interface RespostaMe {
   usuario: UsuarioAutenticado;
   dashboard: DashboardData;
+  msg?: string;
 }

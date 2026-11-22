@@ -1,4 +1,4 @@
-import { HorarioFormatado, PerfilTipo } from "./auth.types";
+import { HorarioFormatado, PerfilTipo } from "@/types/auth.types";
 
 const ROTULO_PERFIL: Record<PerfilTipo, string> = {
   aluno: "Aluno(a)",
@@ -12,12 +12,37 @@ const CLASSE_PERFIL: Record<PerfilTipo, string> = {
   servidor: "bg-amber-100 text-amber-800 border-amber-200",
 };
 
+const ROTA_DASHBOARD_PERFIL: Record<PerfilTipo, string> = {
+  aluno: "/dashboard/aluno",
+  professor: "/dashboard/professor",
+  servidor: "/dashboard/servidor",
+};
+
 export function formatarRotuloPerfil(perfil: PerfilTipo): string {
   return ROTULO_PERFIL[perfil];
 }
 
 export function obterClasseBadgePerfil(perfil: PerfilTipo): string {
   return CLASSE_PERFIL[perfil];
+}
+
+export function obterRotaDashboardPorPerfil(perfil: PerfilTipo): string {
+  return ROTA_DASHBOARD_PERFIL[perfil];
+}
+
+export function obterIniciaisNome(nome: string): string {
+  const partes = nome
+    .trim()
+    .split(/\s+/)
+    .filter((parte) => parte.length > 0 && !/^(prof\.?|profa\.?|dr\.?|dra\.?)$/i.test(parte));
+
+  if (partes.length === 0) {
+    return "US";
+  }
+  if (partes.length === 1) {
+    return partes[0].slice(0, 2).toUpperCase();
+  }
+  return `${partes[0][0]}${partes[partes.length - 1][0]}`.toUpperCase();
 }
 
 export function calcularPercentualCh(cumprida: number, exigida: number): number {

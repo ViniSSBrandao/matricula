@@ -1,20 +1,22 @@
 "use client";
 
-import { DashboardAlunoData, UsuarioAutenticado } from "../utils/auth.types";
-import { calcularPercentualCh, formatarResumoHorarios } from "../utils/formatters.utils";
+import { SectionCard } from "@/components/ui/SectionCard";
+import { BadgeTone, StatusBadge } from "@/components/ui/StatusBadge";
+import { DashboardAlunoData, UsuarioAutenticado } from "@/types/auth.types";
+import { calcularPercentualCh, formatarResumoHorarios } from "@/utils/formatters.utils";
 
-interface DashboardAlunoProps {
+interface DashboardAlunoViewProps {
   usuario: UsuarioAutenticado;
   dados: DashboardAlunoData;
 }
 
-const BADGE_CLASSIFICACAO: Record<"obrigatoria" | "perfil" | "livre", string> = {
-  obrigatoria: "bg-indigo-100 text-indigo-800",
-  perfil: "bg-emerald-100 text-emerald-800",
-  livre: "bg-slate-200 text-slate-800",
+const TONE_CLASSIFICACAO: Record<"obrigatoria" | "perfil" | "livre", BadgeTone> = {
+  obrigatoria: "indigo",
+  perfil: "emerald",
+  livre: "slate",
 };
 
-export default function DashboardAluno({ usuario, dados }: DashboardAlunoProps) {
+export function DashboardAlunoView({ usuario, dados }: DashboardAlunoViewProps) {
   const { progresso, matriculasAtivas, historico } = dados;
 
   const pctObrigatoria = calcularPercentualCh(
@@ -32,28 +34,18 @@ export default function DashboardAluno({ usuario, dados }: DashboardAlunoProps) 
 
   return (
     <div className="space-y-6">
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-100 pb-4">
-          <div>
-            <p className="text-xs font-medium uppercase tracking-wider text-slate-500">
-              Curso vinculado
-            </p>
-            <h2 className="text-xl font-bold text-slate-900">
-              {usuario.curso?.nome ?? "Curso não informado"}
-            </h2>
-          </div>
-          <div className="flex flex-wrap gap-2 text-xs text-slate-600">
-            <span className="rounded-lg bg-slate-100 px-3 py-1.5 font-medium">
-              Exigência Perfil: {progresso.chPerfilExigida}h
-            </span>
-            <span className="rounded-lg bg-slate-100 px-3 py-1.5 font-medium">
-              Exigência Livres: {progresso.chLivresExigida}h
-            </span>
-          </div>
-        </div>
-
-        <div className="mt-5 grid gap-4 md:grid-cols-3">
-          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+      <SectionCard
+        eyebrow="Integralização Curricular"
+        title={usuario.curso?.nome ?? "Curso não informado"}
+        badge={
+          <>
+            <StatusBadge tone="slate">Perfil: {progresso.chPerfilExigida}h</StatusBadge>
+            <StatusBadge tone="slate">Livres: {progresso.chLivresExigida}h</StatusBadge>
+          </>
+        }
+      >
+        <div className="grid gap-4 md:grid-cols-3">
+          <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-4">
             <div className="flex items-center justify-between text-sm">
               <span className="font-semibold text-slate-800">Obrigatórias</span>
               <span className="font-mono text-xs font-semibold text-indigo-700">
@@ -69,7 +61,7 @@ export default function DashboardAluno({ usuario, dados }: DashboardAlunoProps) 
             <p className="mt-2 text-xs text-slate-500">{pctObrigatoria}% concluído</p>
           </div>
 
-          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+          <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-4">
             <div className="flex items-center justify-between text-sm">
               <span className="font-semibold text-slate-800">Perfil</span>
               <span className="font-mono text-xs font-semibold text-emerald-700">
@@ -92,7 +84,7 @@ export default function DashboardAluno({ usuario, dados }: DashboardAlunoProps) 
             </p>
           </div>
 
-          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+          <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-4">
             <div className="flex items-center justify-between text-sm">
               <span className="font-semibold text-slate-800">Eletivas Livres</span>
               <span className="font-mono text-xs font-semibold text-amber-700">
@@ -111,18 +103,12 @@ export default function DashboardAluno({ usuario, dados }: DashboardAlunoProps) 
             </p>
           </div>
         </div>
-      </section>
+      </SectionCard>
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-slate-900">
-            Matrículas Ativas (Cursando)
-          </h3>
-          <span className="rounded-full bg-sky-100 px-3 py-1 text-xs font-semibold text-sky-800">
-            {matriculasAtivas.length} disciplina(s)
-          </span>
-        </div>
-
+      <SectionCard
+        title="Matrículas Ativas (Cursando)"
+        badge={<StatusBadge tone="sky">{matriculasAtivas.length} disciplina(s)</StatusBadge>}
+      >
         {matriculasAtivas.length === 0 ? (
           <p className="rounded-xl border border-dashed border-slate-200 bg-slate-50 p-6 text-center text-sm text-slate-500">
             Nenhuma matrícula ativa com status cursando no momento.
@@ -141,11 +127,9 @@ export default function DashboardAluno({ usuario, dados }: DashboardAlunoProps) 
                     </span>
                     <h4 className="text-sm font-semibold text-slate-900">{item.nomeDisciplina}</h4>
                   </div>
-                  <span
-                    className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium ${BADGE_CLASSIFICACAO[item.classificacaoNoCurso]}`}
-                  >
+                  <StatusBadge tone={TONE_CLASSIFICACAO[item.classificacaoNoCurso]}>
                     {item.classificacaoNoCurso}
-                  </span>
+                  </StatusBadge>
                 </div>
                 <p className="mt-2 text-xs text-slate-600">
                   Docente: <span className="font-medium text-slate-800">{item.professor}</span> •{" "}
@@ -158,16 +142,12 @@ export default function DashboardAluno({ usuario, dados }: DashboardAlunoProps) 
             ))}
           </div>
         )}
-      </section>
+      </SectionCard>
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-slate-900">Histórico Escolar</h3>
-          <span className="text-xs font-medium text-slate-500">
-            {historico.length} registro(s)
-          </span>
-        </div>
-
+      <SectionCard
+        title="Histórico Escolar"
+        badge={<StatusBadge tone="slate">{historico.length} registro(s)</StatusBadge>}
+      >
         {historico.length === 0 ? (
           <p className="rounded-xl border border-dashed border-slate-200 bg-slate-50 p-6 text-center text-sm text-slate-500">
             Nenhuma disciplina concluída no histórico ainda.
@@ -196,23 +176,17 @@ export default function DashboardAluno({ usuario, dados }: DashboardAlunoProps) 
                     </td>
                     <td className="py-2.5 pr-4 text-slate-600">{item.cargaHoraria}h</td>
                     <td className="py-2.5 pr-4">
-                      <span
-                        className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${BADGE_CLASSIFICACAO[item.classificacaoNoCurso]}`}
-                      >
+                      <StatusBadge tone={TONE_CLASSIFICACAO[item.classificacaoNoCurso]}>
                         {item.classificacaoNoCurso}
-                      </span>
+                      </StatusBadge>
                     </td>
                     <td className="py-2.5 pr-4 text-xs text-slate-600">{item.professor}</td>
                     <td className="py-2.5">
-                      <span
-                        className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                          item.statusMatricula === "aprovado"
-                            ? "bg-emerald-100 text-emerald-800"
-                            : "bg-rose-100 text-rose-800"
-                        }`}
+                      <StatusBadge
+                        tone={item.statusMatricula === "aprovado" ? "emerald" : "rose"}
                       >
                         {item.statusMatricula}
-                      </span>
+                      </StatusBadge>
                     </td>
                   </tr>
                 ))}
@@ -220,7 +194,7 @@ export default function DashboardAluno({ usuario, dados }: DashboardAlunoProps) 
             </table>
           </div>
         )}
-      </section>
+      </SectionCard>
     </div>
   );
 }

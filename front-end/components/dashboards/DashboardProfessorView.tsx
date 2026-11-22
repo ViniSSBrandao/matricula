@@ -1,42 +1,53 @@
 "use client";
 
-import { DashboardProfessorData, UsuarioAutenticado } from "../utils/auth.types";
-import { formatarResumoHorarios } from "../utils/formatters.utils";
+import { MetricCard } from "@/components/ui/MetricCard";
+import { SectionCard } from "@/components/ui/SectionCard";
+import { StatusBadge } from "@/components/ui/StatusBadge";
+import { DashboardProfessorData, UsuarioAutenticado } from "@/types/auth.types";
+import { formatarResumoHorarios } from "@/utils/formatters.utils";
 
-interface DashboardProfessorProps {
+interface DashboardProfessorViewProps {
   usuario: UsuarioAutenticado;
   dados: DashboardProfessorData;
 }
 
-export default function DashboardProfessor({ usuario, dados }: DashboardProfessorProps) {
+export function DashboardProfessorView({ usuario, dados }: DashboardProfessorViewProps) {
   const turmasAbertas = dados.turmas.filter((t) => t.status === "aberta");
   const turmasEncerradas = dados.turmas.filter((t) => t.status === "encerrada");
 
   return (
     <div className="space-y-6">
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <p className="text-xs font-medium uppercase tracking-wider text-slate-500">
-          Painel Docente
-        </p>
-        <h2 className="mt-1 text-xl font-bold text-slate-900">{usuario.nome}</h2>
-        <p className="mt-1 text-sm text-slate-600">
-          Titulação: <span className="font-medium text-slate-800">{usuario.titulacao ?? "-"}</span>{" "}
-          • E-mail: <span className="font-medium text-slate-800">{usuario.email}</span>
-        </p>
-        <div className="mt-4 flex flex-wrap gap-3">
-          <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm">
-            <span className="font-semibold text-indigo-700">{turmasAbertas.length}</span> turma(s)
-            aberta(s)
-          </div>
-          <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm">
-            <span className="font-semibold text-slate-700">{turmasEncerradas.length}</span> turma(s)
-            encerrada(s)
-          </div>
+      <SectionCard
+        eyebrow="Painel Docente"
+        title="Resumo de Alocação"
+        subtitle={`Titulação: ${usuario.titulacao ?? "-"} • E-mail: ${usuario.email}`}
+      >
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <MetricCard
+            label="Turmas abertas"
+            value={turmasAbertas.length}
+            tone="indigo"
+            detail="Ofertas ativas no semestre"
+          />
+          <MetricCard
+            label="Turmas encerradas"
+            value={turmasEncerradas.length}
+            tone="slate"
+            detail="Histórico letivo"
+          />
+          <MetricCard
+            label="Total de turmas"
+            value={dados.turmas.length}
+            tone="emerald"
+            detail="Vinculadas ao docente"
+          />
         </div>
-      </section>
+      </SectionCard>
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h3 className="mb-4 text-lg font-semibold text-slate-900">Turmas Abertas</h3>
+      <SectionCard
+        title="Turmas Abertas"
+        badge={<StatusBadge tone="indigo">{turmasAbertas.length} turma(s)</StatusBadge>}
+      >
         {turmasAbertas.length === 0 ? (
           <p className="rounded-xl border border-dashed border-slate-200 bg-slate-50 p-6 text-center text-sm text-slate-500">
             Nenhuma turma aberta vinculada a este docente.
@@ -55,9 +66,9 @@ export default function DashboardProfessor({ usuario, dados }: DashboardProfesso
                     </span>
                     <h4 className="text-sm font-semibold text-slate-900">{turma.nomeDisciplina}</h4>
                   </div>
-                  <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-800">
+                  <StatusBadge tone="emerald">
                     {turma.ocupadas}/{turma.vagas} vagas
-                  </span>
+                  </StatusBadge>
                 </div>
                 <p className="mt-2 text-xs text-slate-600">Carga horária: {turma.cargaHoraria}h</p>
                 <p className="mt-1 text-xs font-medium text-slate-700">
@@ -67,12 +78,12 @@ export default function DashboardProfessor({ usuario, dados }: DashboardProfesso
             ))}
           </div>
         )}
-      </section>
+      </SectionCard>
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h3 className="mb-4 text-lg font-semibold text-slate-900">
-          Histórico de Turmas Encerradas
-        </h3>
+      <SectionCard
+        title="Histórico de Turmas Encerradas"
+        badge={<StatusBadge tone="slate">{turmasEncerradas.length} registro(s)</StatusBadge>}
+      >
         {turmasEncerradas.length === 0 ? (
           <p className="text-sm text-slate-500">Nenhuma turma encerrada encontrada.</p>
         ) : (
@@ -105,7 +116,7 @@ export default function DashboardProfessor({ usuario, dados }: DashboardProfesso
             </table>
           </div>
         )}
-      </section>
+      </SectionCard>
     </div>
   );
 }
