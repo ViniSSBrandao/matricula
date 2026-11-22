@@ -63,6 +63,26 @@ function obterNavegacaoPorPerfil(perfil: PerfilTipo, pathname: string): NavItem[
         href: "/dashboard/servidor",
         ativo: pathname === "/dashboard/servidor",
       },
+      {
+        label: "Disciplinas",
+        href: "/dashboard/servidor/disciplinas",
+        ativo: pathname.startsWith("/dashboard/servidor/disciplinas"),
+      },
+      {
+        label: "Professores",
+        href: "/dashboard/servidor/professores",
+        ativo: pathname.startsWith("/dashboard/servidor/professores"),
+      },
+      {
+        label: "Alunos",
+        href: "/dashboard/servidor/alunos",
+        ativo: pathname.startsWith("/dashboard/servidor/alunos"),
+      },
+      {
+        label: "Turmas",
+        href: "/dashboard/servidor/turmas",
+        ativo: pathname.startsWith("/dashboard/servidor/turmas"),
+      },
     ];
   }
 

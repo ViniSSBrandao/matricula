@@ -18,7 +18,11 @@ import {
 } from "@/engines/storage.engine";
 import { toastEngine } from "@/engines/toast.engine";
 import { authService } from "@/services/auth.service";
-import { RespostaMe, UsuarioAutenticado } from "@/types/auth.types";
+import {
+  PayloadRegistro,
+  RespostaMe,
+  UsuarioAutenticado,
+} from "@/types/auth.types";
 import { ApiToastOption } from "@/types/http.types";
 import { obterRotaDashboardPorPerfil } from "@/utils/formatters.utils";
 
@@ -29,6 +33,7 @@ interface AuthContextValue {
   carregandoSessao: boolean;
   carregandoAcao: boolean;
   signIn: (login: string, toastOverride?: ApiToastOption) => Promise<UsuarioAutenticado>;
+  registerAccount: (payload: PayloadRegistro) => Promise<UsuarioAutenticado>;
   refreshDashboard: (exibirToast?: boolean) => Promise<void>;
   signOut: () => void;
 }
@@ -136,6 +141,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [],
   );
 
+  const registerAccount = useCallback(
+    async (payload: PayloadRegistro): Promise<UsuarioAutenticado> => {
+      setCarregandoAcao(true);
+      try {
+        const { token: novoToken } = await authService.registrarConta(payload);
+        const respostaMe = await authService.buscarSessaoAtual({
+          token: novoToken,
+          toast: false,
+        });
+        tratando401Ref.current = false;
+        salvarTokenSessao(novoToken);
+        setToken(novoToken);
+        setDadosMe(respostaMe);
+        return respostaMe.usuario;
+      } finally {
+        setCarregandoAcao(false);
+      }
+    },
+    [],
+  );
+
   const refreshDashboard = useCallback(
     async (exibirToast = true): Promise<void> => {
       if (!token) return;
@@ -176,6 +202,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         carregandoSessao,
         carregandoAcao,
         signIn,
+        registerAccount,
         refreshDashboard,
         signOut,
       }}

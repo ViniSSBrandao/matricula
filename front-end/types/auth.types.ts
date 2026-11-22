@@ -138,3 +138,26 @@ export interface RespostaMe {
   dashboard: DashboardData;
   msg?: string;
 }
+
+export interface CursoCatalogo {
+  id: number;
+  nome: string;
+  chPerfil: number;
+  chLivres: number;
+}
+
+export interface PayloadRegistroProfessor {
+  perfil: "professor";
+  email: string;
+  login: string;
+}
+
+export interface PayloadRegistroAluno {
+  perfil: "aluno";
+  nome: string;
+  idCurso: number;
+  email: string;
+  login: string;
+}
+
+export type PayloadRegistro = PayloadRegistroProfessor | PayloadRegistroAluno;

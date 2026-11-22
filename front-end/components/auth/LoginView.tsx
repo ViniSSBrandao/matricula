@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { BadgeTone, StatusBadge } from "@/components/ui/StatusBadge";
 import { useAuth } from "@/contexts/AuthContext";
@@ -197,6 +198,16 @@ export function LoginView() {
             </button>
           </div>
         </form>
+
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-4 text-xs text-slate-600">
+          <span>Foi adicionado pela Secretaria Acadêmica e ainda não tem login?</span>
+          <Link
+            href="/cadastro"
+            className="font-semibold text-indigo-600 transition hover:text-indigo-700"
+          >
+            Criar conta (Aluno ou Professor) →
+          </Link>
+        </div>
       </div>
 
       <div className="rounded-3xl border border-slate-200/90 bg-white p-6 shadow-sm sm:p-8">

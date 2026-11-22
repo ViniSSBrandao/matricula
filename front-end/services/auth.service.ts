@@ -1,6 +1,8 @@
 import { apiEngine } from "@/engines/api.engine";
 import {
+  CursoCatalogo,
   LoginDisponivelSeed,
+  PayloadRegistro,
   RespostaLogin,
   RespostaLogins,
   RespostaMe,
@@ -92,8 +94,18 @@ export async function buscarSessaoAtual(options?: ApiRequestOptions): Promise<Re
   return apiEngine.get<RespostaMe>("/auth/me", options);
 }
 
+export async function listarCursos(): Promise<{ items: CursoCatalogo[] }> {
+  return apiEngine.semToast.get<{ items: CursoCatalogo[] }>("/cursos");
+}
+
+export async function registrarConta(payload: PayloadRegistro): Promise<RespostaLogin> {
+  return apiEngine.semToast.post<RespostaLogin>("/auth/register", payload);
+}
+
 export const authService = {
   listarLoginsDisponiveis,
   autenticarPorLogin,
   buscarSessaoAtual,
+  listarCursos,
+  registrarConta,
 };

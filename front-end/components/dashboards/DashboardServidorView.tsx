@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { MetricCard } from "@/components/ui/MetricCard";
 import { SectionCard } from "@/components/ui/SectionCard";
 import { StatusBadge } from "@/components/ui/StatusBadge";
@@ -15,6 +16,60 @@ export function DashboardServidorView({ dados }: DashboardServidorViewProps) {
 
   return (
     <div className="space-y-6">
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <Link
+          href="/dashboard/servidor/disciplinas"
+          className="rounded-2xl border border-indigo-200/80 bg-white p-4 shadow-xs transition hover:border-indigo-300 hover:bg-indigo-50/40"
+        >
+          <p className="text-xs font-semibold uppercase tracking-wider text-indigo-600">
+            Catálogo
+          </p>
+          <p className="mt-1 text-sm font-bold text-slate-900">Disciplinas</p>
+          <p className="mt-0.5 text-xs text-slate-600">
+            Criar e editar disciplinas do currículo.
+          </p>
+        </Link>
+
+        <Link
+          href="/dashboard/servidor/professores"
+          className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-xs transition hover:border-indigo-300 hover:bg-slate-50"
+        >
+          <p className="text-xs font-semibold uppercase tracking-wider text-amber-600">
+            Corpo docente
+          </p>
+          <p className="mt-1 text-sm font-bold text-slate-900">Professores</p>
+          <p className="mt-0.5 text-xs text-slate-600">
+            Adicionar ou desligar professores do sistema.
+          </p>
+        </Link>
+
+        <Link
+          href="/dashboard/servidor/alunos"
+          className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-xs transition hover:border-indigo-300 hover:bg-slate-50"
+        >
+          <p className="text-xs font-semibold uppercase tracking-wider text-sky-600">
+            Discentes
+          </p>
+          <p className="mt-1 text-sm font-bold text-slate-900">Alunos</p>
+          <p className="mt-0.5 text-xs text-slate-600">
+            Adicionar ou desligar alunos por curso.
+          </p>
+        </Link>
+
+        <Link
+          href="/dashboard/servidor/turmas"
+          className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-xs transition hover:border-indigo-300 hover:bg-slate-50"
+        >
+          <p className="text-xs font-semibold uppercase tracking-wider text-emerald-600">
+            Oferta letiva
+          </p>
+          <p className="mt-1 text-sm font-bold text-slate-900">Turmas</p>
+          <p className="mt-0.5 text-xs text-slate-600">
+            Abrir turmas, definir horários e ajustar vagas.
+          </p>
+        </Link>
+      </div>
+
       <SectionCard
         eyebrow="Secretaria Acadêmica"
         title="Indicadores Gerais"
