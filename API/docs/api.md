@@ -31,6 +31,18 @@
 - **200 OK:** `{ "token": "<jwt>", "usuario": { ... } }`
 - **Erros:** `400 BAD_REQUEST`, `401 UNAUTHORIZED`.
 
+### `POST /auth/register` (ou `POST /register`)
+- **Auth:** Pública.
+- **Regras:** Exige pré-cadastro prévio do aluno ou professor feito pela secretaria.
+- **Body (Professor):** `{ "perfil": "professor", "email": "maria@ufpe.br", "login": "maria.prof" }`
+- **Body (Aluno):** `{ "perfil": "aluno", "nome": "Ana Beatriz Souza", "idCurso": 1, "email": "ana@ufpe.br", "login": "ana.cc" }`
+- **201 Created:** `{ "token": "<jwt>", "usuario": { ... } }`
+- **Erros:** `400 VALIDATION_ERROR`, `409 CADASTRO_JA_EXISTE`, `409 LOGIN_DUPLICADO`, `409 EMAIL_DUPLICADO`, `422 CADASTRO_NAO_AUTORIZADO`.
+
+### `GET /cursos`
+- **Auth:** Pública.
+- **200 OK:** `{ "items": [{ "id", "nome", "chPerfil", "chLivres" }] }`.
+
 ### `GET /auth/me` (ou `GET /me`)
 - **Auth:** `authenticate` (qualquer perfil).
 - **200 OK:** `{ "usuario": { ... }, "dashboard": { ... } }`.
@@ -225,13 +237,34 @@
 ### `GET /professores`
 - **Auth / Perfil:** `authenticate` + `authorize("servidor")`.
 - **Query:** `page`, `pageSize`, `search` (nome, e-mail ou titulação, case-insensitive).
-- **200 OK:** `{ items: [{ id, nome, titulacao, email }], page, pageSize, total, totalPages }`.
+- **200 OK:** `{ items: [{ id, nome, titulacao, email, possuiCadastro, login }], page, pageSize, total, totalPages }`.
 
 ### `POST /professores`
 - **Auth / Perfil:** `authenticate` + `authorize("servidor")`.
 - **Body:** `{ "nome": "Profa. Maria Silva", "email": "maria@ufpe.br", "titulacao": "Doutora" }` (`titulacao` opcional).
 - **201 Created:** Header `Location: /professores/<id>` e objeto criado.
 - **Erros:** `400 VALIDATION_ERROR`, `409 PROFESSOR_EMAIL_DUPLICADO`.
+
+### `DELETE /professores/:id`
+- **Auth / Perfil:** `authenticate` + `authorize("servidor")`.
+- **204 No Content:** Desliga o professor e remove seu cadastro vinculado (se houver), desde que não possua turmas.
+- **Erros:** `400 VALIDATION_ERROR`, `404 NOT_FOUND`, `422 PROFESSOR_POSSUI_TURMAS`.
+
+### `GET /alunos`
+- **Auth / Perfil:** `authenticate` + `authorize("servidor")`.
+- **Query:** `page`, `pageSize`, `search` (nome ou curso, case-insensitive).
+- **200 OK:** `{ items: [{ id, nome, curso: { id, nome }, possuiCadastro, login, email }], page, pageSize, total, totalPages }`.
+
+### `POST /alunos`
+- **Auth / Perfil:** `authenticate` + `authorize("servidor")`.
+- **Body:** `{ "nome": "João Silva", "idCurso": 1 }`.
+- **201 Created:** Header `Location: /alunos/<id>` e objeto criado.
+- **Erros:** `400 VALIDATION_ERROR`, `404 NOT_FOUND`.
+
+### `DELETE /alunos/:id`
+- **Auth / Perfil:** `authenticate` + `authorize("servidor")`.
+- **204 No Content:** Desliga o aluno e remove seu cadastro vinculado (se houver), desde que não possua matrículas.
+- **Erros:** `400 VALIDATION_ERROR`, `404 NOT_FOUND`, `422 ALUNO_POSSUI_MATRICULAS`.
 
 ### `GET /turmas`
 - **Auth / Perfil:** `authenticate` + `authorize("servidor")`.

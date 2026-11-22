@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { authenticate, authorize } from "../../middlewares/auth.middleware";
 import { asyncHandler } from "../../utils/async-handler.utils";
-import { getProfessores, postProfessor } from "./professores.controller";
+import { deleteProfessor, getProfessores, postProfessor } from "./professores.controller";
 
 const professoresRouter = Router();
 
@@ -17,6 +17,13 @@ professoresRouter.post(
   authenticate,
   authorize("servidor"),
   asyncHandler(postProfessor),
+);
+
+professoresRouter.delete(
+  "/professores/:id",
+  authenticate,
+  authorize("servidor"),
+  asyncHandler(deleteProfessor),
 );
 
 export default professoresRouter;

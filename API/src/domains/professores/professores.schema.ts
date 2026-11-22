@@ -1,7 +1,9 @@
 import { z } from "zod";
 import { paginationQuerySchema, PaginationQuery } from "../../utils/pagination.utils";
+import { idParamSchema } from "../../utils/validation.utils";
 
 export const listarProfessoresQuerySchema = paginationQuerySchema;
+export const professorIdParamSchema = idParamSchema;
 
 export const criarProfessorBodySchema = z.object({
   nome: z

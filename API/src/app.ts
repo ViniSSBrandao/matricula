@@ -1,6 +1,8 @@
 import express, { Express, Request, Response } from "express";
 import swaggerUi from "swagger-ui-express";
 import { buildSwaggerDocument } from "./docs/swagger";
+import alunosRouter from "./domains/alunos/alunos.routes";
+import cursosRouter from "./domains/cursos/cursos.routes";
 import disciplinasRouter from "./domains/disciplinas/disciplinas.routes";
 import loginRouter from "./domains/login/login.routes";
 import matriculasRouter from "./domains/matriculas/matriculas.routes";
@@ -291,6 +293,8 @@ app.use("/", meRouter);
 app.use("/", ofertasRouter);
 app.use("/", matriculasRouter);
 app.use("/", progressoRouter);
+app.use("/", cursosRouter);
+app.use("/", alunosRouter);
 app.use("/", disciplinasRouter);
 app.use("/", professoresRouter);
 app.use("/", turmasRouter);
