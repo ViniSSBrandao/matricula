@@ -61,23 +61,22 @@ npm test
 
 **URLs após subir:**
 
-| Serviço                                       | URL                                     |
-| :-------------------------------------------- | :-------------------------------------- |
-| Front-end                                     | http://localhost:3000                   |
-| API                                           | http://localhost:5000                   |
-| Swagger UI (principal referência das rotas)   | http://localhost:5000/docs              |
-| Especificação OpenAPI (JSON)                  | http://localhost:5000/docs/openapi.json |
+| Serviço                                     | URL                        |
+| :------------------------------------------ | :------------------------- |
+| Front-end                                   | http://localhost:3000      |
+| API                                         | http://localhost:5000      |
+| Swagger UI (principal referência das rotas) | http://localhost:5000/docs |
 
 ### Contas de demonstração (seed)
 
-| Login          | Perfil      | Curso / Titulação        | O que ilustra                                                                                         |
-| :------------- | :---------- | :----------------------- | :---------------------------------------------------------------------------------------------------- |
-| `secretaria`   | `servidor`  | Secretaria Acadêmica     | CRUD de disciplinas, professores, alunos e turmas/vagas                                               |
-| `ricardo.prof` | `professor` | Doutor                   | Funcionalidade extra: painel e grade do professor                                                     |
+| Login          | Perfil      | Curso / Titulação        | O que ilustra                                                                                                                      |
+| :------------- | :---------- | :----------------------- | :--------------------------------------------------------------------------------------------------------------------------------- |
+| `secretaria`   | `servidor`  | Secretaria Acadêmica     | CRUD de disciplinas, professores, alunos e turmas/vagas                                                                            |
+| `ricardo.prof` | `professor` | Doutor                   | Funcionalidade extra: painel e grade do professor                                                                                  |
 | `ana.cc`       | `aluno`     | Ciência da Computação    | Aprovações nos 3 grupos, excedente de perfil contado como livre, aprovada em `IF672`, ocupa a única vaga de `IF674` (turma lotada) |
-| `bruno.cc`     | `aluno`     | Ciência da Computação    | Reprovado em `IF673` (pode cursar de novo) e cursando `IF676` (choca com `EC703`, adjacente a `AD801`) |
-| `carla.ec`     | `aluno`     | Engenharia da Computação | `IF668` é perfil e `IF670` é obrigatória em EC, o inverso de CC (mesma disciplina, grupo diferente por curso) |
-| `diego.ec`     | `aluno`     | Engenharia da Computação | Reprovado em `EC702`, com turma aberta disponível para nova matrícula                                 |
+| `bruno.cc`     | `aluno`     | Ciência da Computação    | Reprovado em `IF673` (pode cursar de novo) e cursando `IF676` (choca com `EC703`, adjacente a `AD801`)                             |
+| `carla.ec`     | `aluno`     | Engenharia da Computação | `IF668` é perfil e `IF670` é obrigatória em EC, o inverso de CC (mesma disciplina, grupo diferente por curso)                      |
+| `diego.ec`     | `aluno`     | Engenharia da Computação | Reprovado em `EC702`, com turma aberta disponível para nova matrícula                                                              |
 
 > [!NOTE]
 > O perfil `servidor` representa um servidor técnico-administrativo da **Secretaria Acadêmica**. O nome segue a tabela `servidor` do modelo de dados e aparece nas rotas do front-end (`/dashboard/servidor/...`).
@@ -158,15 +157,15 @@ Qualquer erro lançado em uma dessas etapas é convertido em resposta HTTP pelo 
 - **Contrato de erro:** todas as falhas respondem `{ message, code, details? }`, montado por [`error-handler.middleware.ts`](API/src/middlewares/error-handler.middleware.ts) e [`error-mapper.utils.ts`](API/src/utils/error-mapper.utils.ts).
 - **Status HTTP:**
 
-  | Status | Quando                                                                                             |
-  | :----- | :------------------------------------------------------------------------------------------------- |
-  | `400`  | Validação de entrada, parâmetros inválidos ou referência inexistente (`P2003`)                     |
+  | Status | Quando                                                                                                                                           |
+  | :----- | :----------------------------------------------------------------------------------------------------------------------------------------------- |
+  | `400`  | Validação de entrada, parâmetros inválidos ou referência inexistente (`P2003`)                                                                   |
   | `401`  | Token ausente, inválido ou expirado; também no login com usuário inexistente (não há senha, então o login inexistente é a "credencial inválida") |
-  | `403`  | Perfil sem permissão para a rota                                                                   |
-  | `404`  | Recurso inexistente; também ao acessar matrícula de outro aluno, para não revelar que ela existe   |
-  | `409`  | Violação de unicidade (`P2002`)                                                                    |
-  | `422`  | Violação de regra de negócio ou de `CHECK` constraint                                              |
-  | `503`  | Banco de dados indisponível                                                                        |
+  | `403`  | Perfil sem permissão para a rota                                                                                                                 |
+  | `404`  | Recurso inexistente; também ao acessar matrícula de outro aluno, para não revelar que ela existe                                                 |
+  | `409`  | Violação de unicidade (`P2002`)                                                                                                                  |
+  | `422`  | Violação de regra de negócio ou de `CHECK` constraint                                                                                            |
+  | `503`  | Banco de dados indisponível                                                                                                                      |
 
 - **Paginação e busca:** `page` (padrão `1`), `pageSize` (`1..50`, padrão `10`) e `search` (case-insensitive), via [`pagination.utils.ts`](API/src/utils/pagination.utils.ts).
 - **JWT:** tokens HS256 assinados com `node:crypto`, sem biblioteca externa ([`jwt.utils.ts`](API/src/utils/jwt.utils.ts)). Segredo e expiração vêm de `JWT_SECRET` e `JWT_EXPIRES_IN`.
@@ -179,22 +178,22 @@ Qualquer erro lançado em uma dessas etapas é convertido em resposta HTTP pelo 
 
 Testes: **C** = [`constraints.test.ts`](API/prisma/constraints.test.ts) · **Cad** = [`cadastros.regras.test.ts`](API/tests/cadastros.regras.test.ts) · **Mat** = [`matriculas.regras.test.ts`](API/tests/matriculas.regras.test.ts) · **Prog** = [`progresso.regras.test.ts`](API/tests/progresso.regras.test.ts).
 
-| Regra                                                   | Onde é garantida                                                                                         | Testes   |
-| :------------------------------------------------------ | :------------------------------------------------------------------------------------------------------- | :------- |
-| **1.** Código da disciplina é único                     | Banco (`UNIQUE`) + [`disciplinas.repository.ts`](API/src/domains/disciplinas/disciplinas.repository.ts) (`P2002` → `409`) | C · Cad  |
-| **2.** CH múltipla de 15, entre 15 e 120                | Banco (`CHECK`) + [`disciplinas.schema.ts`](API/src/domains/disciplinas/disciplinas.schema.ts) (Zod)    | C · Cad  |
-| **3.** E-mail do professor é único                      | Banco (`UNIQUE`) + [`professores.repository.ts`](API/src/domains/professores/professores.repository.ts) (`P2002` → `409`) | C · Cad  |
-| **4.** Turma exige disciplina, professor e ≥ 1 vaga     | Banco (`FK`/`CHECK`) + [`turmas.schema.ts`](API/src/domains/turmas/turmas.schema.ts) + [`turmas.repository.ts`](API/src/domains/turmas/turmas.repository.ts) | C · Cad  |
-| **5.** Vagas não podem ficar abaixo dos matriculados    | `turmas.repository.ts`, com lock `FOR UPDATE` → `422`                                                    | Cad      |
-| **6.** Não matricular em turma lotada                   | [`matriculas.repository.ts`](API/src/domains/matriculas/matriculas.repository.ts), com lock `FOR UPDATE` → `422` | Mat      |
-| **7.** Bloquear disciplina já aprovada; liberar reprovada | `matriculas.repository.ts` (histórico em `alunos_turma`) → `422`                                       | Mat      |
-| **8.** Cancelamento devolve a vaga                      | [`matriculas.service.ts`](API/src/domains/matriculas/matriculas.service.ts) + repository (`status = 'cancelada'`) | Mat      |
-| **9.** Aluno só vê e altera as próprias matrículas      | JWT (`idPerfil`) + `matriculas.service.ts` (`404` para matrícula alheia)                                 | Mat      |
-| **10.** Classificação relativa ao curso                 | [`progresso.domain.ts`](API/src/domains/progresso/progresso.domain.ts) (`classificarDisciplina`)        | Prog     |
-| **11.** Excedente de perfil conta como livre            | `progresso.domain.ts` (`calcularProgresso`)                                                              | Prog     |
-| **12.** Só aprovada integraliza; cursando vai em `emCurso` | [`progresso.service.ts`](API/src/domains/progresso/progresso.service.ts) + `progresso.domain.ts`      | Prog     |
-| **13.** Percentual ≤ 100% e falta ≥ 0                   | `progresso.domain.ts` (`montarGrupoProgresso`)                                                           | Prog     |
-| **Extra.** Choque de horário e grade                    | Banco (`CHECK` nos horários) + Zod + [`horario.utils.ts`](API/src/utils/horario.utils.ts) + [`matriculas.domain.ts`](API/src/domains/matriculas/matriculas.domain.ts) + repository | C · Mat  |
+| Regra                                                      | Onde é garantida                                                                                                                                                                   | Testes  |
+| :--------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------ |
+| **1.** Código da disciplina é único                        | Banco (`UNIQUE`) + [`disciplinas.repository.ts`](API/src/domains/disciplinas/disciplinas.repository.ts) (`P2002` → `409`)                                                          | C · Cad |
+| **2.** CH múltipla de 15, entre 15 e 120                   | Banco (`CHECK`) + [`disciplinas.schema.ts`](API/src/domains/disciplinas/disciplinas.schema.ts) (Zod)                                                                               | C · Cad |
+| **3.** E-mail do professor é único                         | Banco (`UNIQUE`) + [`professores.repository.ts`](API/src/domains/professores/professores.repository.ts) (`P2002` → `409`)                                                          | C · Cad |
+| **4.** Turma exige disciplina, professor e ≥ 1 vaga        | Banco (`FK`/`CHECK`) + [`turmas.schema.ts`](API/src/domains/turmas/turmas.schema.ts) + [`turmas.repository.ts`](API/src/domains/turmas/turmas.repository.ts)                       | C · Cad |
+| **5.** Vagas não podem ficar abaixo dos matriculados       | `turmas.repository.ts`, com lock `FOR UPDATE` → `422`                                                                                                                              | Cad     |
+| **6.** Não matricular em turma lotada                      | [`matriculas.repository.ts`](API/src/domains/matriculas/matriculas.repository.ts), com lock `FOR UPDATE` → `422`                                                                   | Mat     |
+| **7.** Bloquear disciplina já aprovada; liberar reprovada  | `matriculas.repository.ts` (histórico em `alunos_turma`) → `422`                                                                                                                   | Mat     |
+| **8.** Cancelamento devolve a vaga                         | [`matriculas.service.ts`](API/src/domains/matriculas/matriculas.service.ts) + repository (`status = 'cancelada'`)                                                                  | Mat     |
+| **9.** Aluno só vê e altera as próprias matrículas         | JWT (`idPerfil`) + `matriculas.service.ts` (`404` para matrícula alheia)                                                                                                           | Mat     |
+| **10.** Classificação relativa ao curso                    | [`progresso.domain.ts`](API/src/domains/progresso/progresso.domain.ts) (`classificarDisciplina`)                                                                                   | Prog    |
+| **11.** Excedente de perfil conta como livre               | `progresso.domain.ts` (`calcularProgresso`)                                                                                                                                        | Prog    |
+| **12.** Só aprovada integraliza; cursando vai em `emCurso` | [`progresso.service.ts`](API/src/domains/progresso/progresso.service.ts) + `progresso.domain.ts`                                                                                   | Prog    |
+| **13.** Percentual ≤ 100% e falta ≥ 0                      | `progresso.domain.ts` (`montarGrupoProgresso`)                                                                                                                                     | Prog    |
+| **Extra.** Choque de horário e grade                       | Banco (`CHECK` nos horários) + Zod + [`horario.utils.ts`](API/src/utils/horario.utils.ts) + [`matriculas.domain.ts`](API/src/domains/matriculas/matriculas.domain.ts) + repository | C · Mat |
 
 ---
 
@@ -238,12 +237,12 @@ toastEngine.error(mensagem);
 
 ### Telas
 
-| Área                 | Rotas                                                                                      |
-| :------------------- | :----------------------------------------------------------------------------------------- |
-| Entrada              | `/login`, `/cadastro`                                                                      |
-| Aluno                | `/dashboard/aluno`, `/ofertas`, `/matriculas`, `/horarios`, `/progresso`                   |
-| Secretaria           | `/dashboard/servidor`, `/disciplinas`, `/professores`, `/alunos`, `/turmas`                |
-| Professor            | `/dashboard/professor`, `/horarios`                                                        |
+| Área       | Rotas                                                                       |
+| :--------- | :-------------------------------------------------------------------------- |
+| Entrada    | `/login`, `/cadastro`                                                       |
+| Aluno      | `/dashboard/aluno`, `/ofertas`, `/matriculas`, `/horarios`, `/progresso`    |
+| Secretaria | `/dashboard/servidor`, `/disciplinas`, `/professores`, `/alunos`, `/turmas` |
+| Professor  | `/dashboard/professor`, `/horarios`                                         |
 
 ### Estados de lista, URL e responsividade
 
@@ -281,13 +280,13 @@ Mais detalhes em [`API/README.md`](API/README.md).
 
 Execute em `API/` com `npm test` (`vitest run`, com `fileParallelism: false`). Um banco de testes dedicado é criado e migrado automaticamente por [`test-db.global.ts`](API/tests/setup/test-db.global.ts); o PostgreSQL precisa estar no ar.
 
-| Arquivo                                                          | O que valida                                                                                 |
-| :--------------------------------------------------------------- | :------------------------------------------------------------------------------------------- |
-| [`constraints.test.ts`](API/prisma/constraints.test.ts)          | `UNIQUE` e `CHECK` constraints diretamente no PostgreSQL                                     |
-| [`cadastros.regras.test.ts`](API/tests/cadastros.regras.test.ts) | Controle de perfil da Secretaria e Regras 1 a 5, via HTTP (`supertest`)                      |
-| [`matriculas.regras.test.ts`](API/tests/matriculas.regras.test.ts) | Regras 6 a 9, isolamento entre alunos e choque/adjacência de horários                      |
-| [`progresso.regras.test.ts`](API/tests/progresso.regras.test.ts) | Regras 10 a 13: classificação por curso, transbordo de perfil e teto de 100%                 |
-| [`server.test.ts`](API/tests/server.test.ts)                     | Smoke test de `GET /` e de rota inexistente (`404`)                                          |
+| Arquivo                                                            | O que valida                                                                 |
+| :----------------------------------------------------------------- | :--------------------------------------------------------------------------- |
+| [`constraints.test.ts`](API/prisma/constraints.test.ts)            | `UNIQUE` e `CHECK` constraints diretamente no PostgreSQL                     |
+| [`cadastros.regras.test.ts`](API/tests/cadastros.regras.test.ts)   | Controle de perfil da Secretaria e Regras 1 a 5, via HTTP (`supertest`)      |
+| [`matriculas.regras.test.ts`](API/tests/matriculas.regras.test.ts) | Regras 6 a 9, isolamento entre alunos e choque/adjacência de horários        |
+| [`progresso.regras.test.ts`](API/tests/progresso.regras.test.ts)   | Regras 10 a 13: classificação por curso, transbordo de perfil e teto de 100% |
+| [`server.test.ts`](API/tests/server.test.ts)                       | Smoke test de `GET /` e de rota inexistente (`404`)                          |
 
 ---
 
