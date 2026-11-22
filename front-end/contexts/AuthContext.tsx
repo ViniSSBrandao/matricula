@@ -6,9 +6,11 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useRef,
   useState,
 } from "react";
 import { useRouter } from "next/navigation";
+import { registrarHandlersSessao } from "@/engines/api.engine";
 import {
   lerTokenSessao,
   limparTokenSessao,
@@ -18,6 +20,7 @@ import { toastEngine } from "@/engines/toast.engine";
 import { authService } from "@/services/auth.service";
 import { RespostaMe, UsuarioAutenticado } from "@/types/auth.types";
 import { ApiToastOption } from "@/types/http.types";
+import { obterRotaDashboardPorPerfil } from "@/utils/formatters.utils";
 
 interface AuthContextValue {
   token: string | null;
@@ -39,6 +42,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [carregandoSessao, setCarregandoSessao] = useState(true);
   const [carregandoAcao, setCarregandoAcao] = useState(false);
 
+  const usuarioAtualRef = useRef<UsuarioAutenticado | null>(null);
+  const tratando401Ref = useRef(false);
+
+  useEffect(() => {
+    usuarioAtualRef.current = dadosMe?.usuario ?? null;
+  }, [dadosMe]);
+
+  useEffect(() => {
+    const desregistrar = registrarHandlersSessao({
+      onUnauthorized: () => {
+        if (tratando401Ref.current) {
+          return;
+        }
+        tratando401Ref.current = true;
+        limparTokenSessao();
+        setToken(null);
+        setDadosMe(null);
+        toastEngine.warning("Sua sessão expirou. Faça login novamente.");
+        router.replace("/login");
+      },
+      onForbidden: () => {
+        const usuarioAtual = usuarioAtualRef.current;
+        toastEngine.warning("Você não tem permissão para acessar este recurso.");
+        if (usuarioAtual) {
+          router.replace(obterRotaDashboardPorPerfil(usuarioAtual.perfil));
+        }
+      },
+    });
+
+    return desregistrar;
+  }, [router]);
+
   useEffect(() => {
     let ativo = true;
 
@@ -57,6 +92,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           toast: false,
         });
         if (!ativo) return;
+        tratando401Ref.current = false;
         setToken(tokenSalvo);
         setDadosMe(resposta);
       } catch {
@@ -88,6 +124,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           token: novoToken,
           toast: false,
         });
+        tratando401Ref.current = false;
         salvarTokenSessao(novoToken);
         setToken(novoToken);
         setDadosMe(respostaMe);

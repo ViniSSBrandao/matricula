@@ -26,8 +26,17 @@ export interface ApiRequestOptions {
   headers?: Record<string, string>;
 }
 
+export interface ApiNestedErrorPayload {
+  msg?: string;
+  message?: string;
+  code?: string;
+  details?: unknown;
+}
+
 export interface ApiMessagePayload {
   msg?: string;
   message?: string;
   code?: string;
+  details?: unknown;
+  error?: ApiNestedErrorPayload;
 }

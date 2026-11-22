@@ -20,6 +20,7 @@ export function obterApiBaseUrl(): string {
 export class ApiClientError extends Error {
   public readonly status?: number;
   public readonly code?: string;
+  public readonly details?: unknown;
   public readonly originalError: unknown;
 
   constructor(
@@ -27,6 +28,7 @@ export class ApiClientError extends Error {
     options?: {
       status?: number;
       code?: string;
+      details?: unknown;
       originalError?: unknown;
     },
   ) {
@@ -34,9 +36,36 @@ export class ApiClientError extends Error {
     this.name = "ApiClientError";
     this.status = options?.status;
     this.code = options?.code;
+    this.details = options?.details;
     this.originalError = options?.originalError;
   }
 }
+
+export interface SessionErrorHandlers {
+  onUnauthorized?: (erro: ApiClientError) => void;
+  onForbidden?: (erro: ApiClientError) => void;
+}
+
+const sessionHandlersRegistry = new Set<SessionErrorHandlers>();
+
+/**
+ * Registra callbacks globais para respostas 401 (sessão expirada/não autenticada)
+ * e 403 (perfil sem permissão), retornando função de cancelamento.
+ */
+export function registrarHandlersSessao(handlers: SessionErrorHandlers): () => void {
+  sessionHandlersRegistry.add(handlers);
+  return () => {
+    sessionHandlersRegistry.delete(handlers);
+  };
+}
+
+const CODIGOS_NAO_AUTENTICADO = new Set([
+  "UNAUTHORIZED",
+  "SESSAO_EXPIRADA",
+  "NAO_AUTENTICADO",
+]);
+
+const CODIGOS_PERFIL_SEM_ACESSO = new Set(["FORBIDDEN", "PERFIL_SEM_ACESSO"]);
 
 const axiosClient: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
@@ -59,19 +88,39 @@ axiosClient.interceptors.request.use((config) => {
   return config;
 });
 
-function extrairMensagemPayload(payload: unknown): string | undefined {
+function extrairDadosErroPayload(payload: unknown): {
+  message?: string;
+  code?: string;
+  details?: unknown;
+} {
   if (!payload || typeof payload !== "object") {
-    return undefined;
+    return {};
   }
 
   const dados = payload as ApiMessagePayload;
-  if (typeof dados.msg === "string" && dados.msg.trim().length > 0) {
-    return dados.msg.trim();
-  }
-  if (typeof dados.message === "string" && dados.message.trim().length > 0) {
-    return dados.message.trim();
-  }
-  return undefined;
+  const aninhado =
+    dados.error && typeof dados.error === "object" ? dados.error : undefined;
+
+  const candidatosMensagem = [
+    dados.msg,
+    dados.message,
+    aninhado?.msg,
+    aninhado?.message,
+  ];
+  const message = candidatosMensagem.find(
+    (item): item is string => typeof item === "string" && item.trim().length > 0,
+  )?.trim();
+
+  const code =
+    typeof dados.code === "string" && dados.code.trim().length > 0
+      ? dados.code.trim()
+      : typeof aninhado?.code === "string" && aninhado.code.trim().length > 0
+        ? aninhado.code.trim()
+        : undefined;
+
+  const details = dados.details !== undefined ? dados.details : aninhado?.details;
+
+  return { message, code, details };
 }
 
 function extrairMensagemMsgEstrita(payload: unknown): string | undefined {
@@ -85,20 +134,20 @@ function extrairMensagemMsgEstrita(payload: unknown): string | undefined {
   return undefined;
 }
 
-function normalizarErroAxios(erro: unknown): ApiClientError {
+export function normalizarErroAxios(erro: unknown): ApiClientError {
   if (erro instanceof ApiClientError) {
     return erro;
   }
 
   if (axios.isAxiosError(erro)) {
     const status = erro.response?.status;
-    const payload = erro.response?.data as ApiMessagePayload | undefined;
-    const mensagemPayload = extrairMensagemPayload(payload);
+    const { message, code, details } = extrairDadosErroPayload(erro.response?.data);
 
-    if (mensagemPayload) {
-      return new ApiClientError(mensagemPayload, {
+    if (message) {
+      return new ApiClientError(message, {
         status,
-        code: typeof payload?.code === "string" ? payload.code : undefined,
+        code,
+        details,
         originalError: erro,
       });
     }
@@ -123,6 +172,8 @@ function normalizarErroAxios(erro: unknown): ApiClientError {
 
     return new ApiClientError(`Erro HTTP ${status} ao comunicar com a API.`, {
       status,
+      code,
+      details,
       originalError: erro,
     });
   }
@@ -134,6 +185,26 @@ function normalizarErroAxios(erro: unknown): ApiClientError {
   return new ApiClientError("Ocorreu um erro inesperado na comunicação com a API.", {
     originalError: erro,
   });
+}
+
+function ehRotaDeLogin(url: string): boolean {
+  const limpa = url.split("?")[0].replace(/\/+$/, "");
+  return limpa === "/auth/login" || limpa === "/login";
+}
+
+function notificarHandlersSessao(url: string, erro: ApiClientError): void {
+  if (erro.status === 401 && !ehRotaDeLogin(url)) {
+    if (!erro.code || CODIGOS_NAO_AUTENTICADO.has(erro.code)) {
+      sessionHandlersRegistry.forEach((handler) => handler.onUnauthorized?.(erro));
+    }
+    return;
+  }
+
+  if (erro.status === 403) {
+    if (!erro.code || CODIGOS_PERFIL_SEM_ACESSO.has(erro.code)) {
+      sessionHandlersRegistry.forEach((handler) => handler.onForbidden?.(erro));
+    }
+  }
 }
 
 function notificarSucesso(data: unknown, toast?: ApiToastOption): void {
@@ -238,6 +309,7 @@ async function executarRequisicao<TResponse>(
     return response.data;
   } catch (erro) {
     const erroNormalizado = normalizarErroAxios(erro);
+    notificarHandlersSessao(url, erroNormalizado);
     notificarErro(erroNormalizado, options?.toast);
     throw erroNormalizado;
   }

@@ -1,4 +1,5 @@
 import { HorarioFormatado, PerfilTipo } from "@/types/auth.types";
+import { formatarListaHorarios } from "./horario.utils";
 
 const ROTULO_PERFIL: Record<PerfilTipo, string> = {
   aluno: "Aluno(a)",
@@ -53,8 +54,5 @@ export function calcularPercentualCh(cumprida: number, exigida: number): number 
 }
 
 export function formatarResumoHorarios(horarios: HorarioFormatado[]): string {
-  if (horarios.length === 0) {
-    return "Sem horário cadastrado";
-  }
-  return horarios.map((h) => h.texto).join(" • ");
+  return formatarListaHorarios(horarios);
 }

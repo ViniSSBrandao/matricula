@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { SectionCard } from "@/components/ui/SectionCard";
 import { BadgeTone, StatusBadge } from "@/components/ui/StatusBadge";
 import { DashboardAlunoData, UsuarioAutenticado } from "@/types/auth.types";
@@ -34,6 +35,60 @@ export function DashboardAlunoView({ usuario, dados }: DashboardAlunoViewProps) 
 
   return (
     <div className="space-y-6">
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <Link
+          href="/dashboard/aluno/ofertas"
+          className="rounded-2xl border border-indigo-200/80 bg-white p-4 shadow-xs transition hover:border-indigo-300 hover:bg-indigo-50/40"
+        >
+          <p className="text-xs font-semibold uppercase tracking-wider text-indigo-600">
+            Matrícula
+          </p>
+          <p className="mt-1 text-sm font-bold text-slate-900">Disciplinas Ofertadas</p>
+          <p className="mt-0.5 text-xs text-slate-600">
+            Ver turmas abertas, filtrar e realizar matrícula.
+          </p>
+        </Link>
+
+        <Link
+          href="/dashboard/aluno/matriculas"
+          className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-xs transition hover:border-indigo-300 hover:bg-slate-50"
+        >
+          <p className="text-xs font-semibold uppercase tracking-wider text-sky-600">
+            Semestre atual
+          </p>
+          <p className="mt-1 text-sm font-bold text-slate-900">Disciplinas Matriculadas</p>
+          <p className="mt-0.5 text-xs text-slate-600">
+            Gerenciar e cancelar disciplinas em curso.
+          </p>
+        </Link>
+
+        <Link
+          href="/dashboard/aluno/horarios"
+          className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-xs transition hover:border-indigo-300 hover:bg-slate-50"
+        >
+          <p className="text-xs font-semibold uppercase tracking-wider text-violet-600">
+            Grade semanal
+          </p>
+          <p className="mt-1 text-sm font-bold text-slate-900">Meus Horários</p>
+          <p className="mt-0.5 text-xs text-slate-600">
+            Visualizar calendário semanal de aulas por dia.
+          </p>
+        </Link>
+
+        <Link
+          href="/dashboard/aluno/progresso"
+          className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-xs transition hover:border-indigo-300 hover:bg-slate-50"
+        >
+          <p className="text-xs font-semibold uppercase tracking-wider text-emerald-600">
+            Currículo
+          </p>
+          <p className="mt-1 text-sm font-bold text-slate-900">Progresso detalhado</p>
+          <p className="mt-0.5 text-xs text-slate-600">
+            Consultar CH exigida, em curso e faltante.
+          </p>
+        </Link>
+      </div>
+
       <SectionCard
         eyebrow="Integralização Curricular"
         title={usuario.curso?.nome ?? "Curso não informado"}
