@@ -249,7 +249,7 @@ export function LoginView() {
               type="button"
               disabled={carregandoAcao}
               onClick={() => void handleAtalhoClick(item.login)}
-              className="group flex items-start gap-3.5 rounded-2xl border border-slate-200 bg-slate-50/70 p-4 text-left transition hover:border-indigo-300 hover:bg-indigo-50/40 hover:shadow-xs disabled:cursor-not-allowed disabled:opacity-60"
+              className="group flex w-full min-w-0 items-start gap-3.5 rounded-2xl border border-slate-200 bg-slate-50/70 p-4 text-left transition hover:border-indigo-300 hover:bg-indigo-50/40 hover:shadow-xs disabled:cursor-not-allowed disabled:opacity-60"
             >
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-900 text-xs font-bold text-white transition group-hover:bg-indigo-600">
                 {obterIniciaisNome(item.nome)}

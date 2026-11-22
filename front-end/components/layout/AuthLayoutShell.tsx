@@ -31,7 +31,7 @@ export function AuthLayoutShell({ children }: { children: ReactNode }) {
   }, [carregandoSessao, usuario, router]);
 
   return (
-    <div className="relative grid min-h-screen flex-1 bg-slate-50 lg:grid-cols-12">
+    <div className="relative grid min-h-screen w-full flex-1 overflow-x-hidden bg-slate-50 lg:grid-cols-12">
       {!carregandoSessao && usuario && (
         <div className="fixed inset-0 z-40 flex items-center justify-center bg-slate-50/90 backdrop-blur-xs">
           <div className="flex items-center gap-3.5 rounded-2xl border border-slate-200 bg-white px-6 py-4 shadow-sm">
@@ -98,7 +98,7 @@ export function AuthLayoutShell({ children }: { children: ReactNode }) {
         </div>
       </aside>
 
-      <div className="flex flex-col lg:col-span-7">
+      <div className="flex min-w-0 flex-col lg:col-span-7">
         <div className="border-b border-slate-200 bg-slate-950 px-5 py-4 text-white lg:hidden">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
@@ -116,8 +116,8 @@ export function AuthLayoutShell({ children }: { children: ReactNode }) {
           </div>
         </div>
 
-        <main className="flex flex-1 items-center justify-center px-4 py-8 sm:px-8 lg:px-12">
-          <div className="w-full max-w-2xl">{children}</div>
+        <main className="flex min-w-0 flex-1 items-center justify-center px-4 py-8 sm:px-8 lg:px-12">
+          <div className="w-full min-w-0 max-w-2xl">{children}</div>
         </main>
       </div>
     </div>
